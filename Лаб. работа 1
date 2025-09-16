@@ -1,0 +1,184 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace labrab1
+{
+    class labrab1
+    {
+        static void Main()
+        {
+            while (true)
+            {
+                Console.WriteLine("Выбирите действие");
+                Console.WriteLine("1. Вычислить a, b"); // Задания 1.1-1.5
+                Console.WriteLine("2. Вычислить длину окружности, площадь круга и объем шара");
+                Console.WriteLine("3. Вычисление максимального числа из трёх (расположение в порядке возрастания)");
+                Console.WriteLine("4. Вычисления площадей различных геометрических фигур");
+                Console.WriteLine("5. Метод отображения данных структуры."); // Задание 2
+                Console.Write("Выбирите действие: ");
+
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        First();
+                        break;
+                    case "2":
+                        Second();
+                        break;
+                    case "3":
+                        Third();
+                        break;
+                    case "4":
+                        Fourth();
+                        break;
+                    case "5":
+                        Fifth();
+                        break;
+                    default:
+                        Console.WriteLine("Несуществующее действие");
+                        break;
+                }
+            }
+        }
+        static void First() // Задания 1.1 - 1.5
+        {
+            Console.Write("Введите x: ");
+            double x = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Введите y: ");
+            double y = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Введите z: ");
+            double z = Convert.ToDouble(Console.ReadLine());
+
+            double a = Math.Log(Math.Abs((y - Math.Sqrt(Math.Abs(x))) * (x - y / (z + Math.Pow(x, 2) / 4))));
+            double b = x - Math.Pow(x, 2) / 3 + (x + y) / x;
+
+            Console.WriteLine($"a = {a}, b = {b}");
+        }
+
+        static void Second()
+        {
+            Console.Write("Введите радиус: ");
+            double rad = Convert.ToDouble(Console.ReadLine());
+
+            double C, S, V;
+            C = 2 * 3.14 * rad;
+            S = 3.14 * rad * rad;
+            V = (4 / 3) * 3.14 * rad * rad * rad;
+
+            Console.WriteLine($"При радиусе равном {rad} длинна окружности равна {C}, площадь круга равна {S}, объем шара равен {V}");
+        }
+        static void Third()
+        {
+            Console.Write("Введите первое число: ");
+            double a1 = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Введите первое число: ");
+            double a2 = Convert.ToDouble(Console.ReadLine());
+            Console.Write("Введите первое число: ");
+            double a3 = Convert.ToDouble(Console.ReadLine());
+
+            double max = Math.Max(Math.Max(a1, a2), a3);
+            double min = Math.Min(Math.Min(a1, a2), a3);
+            double mid = a1 + a2 + a3 - max - min;
+
+            Console.WriteLine($"Максимальное число: {max}");
+            Console.WriteLine($"Числа в порядке возрастания: {min}, {mid}, {max}");
+        }
+        static void Fourth()
+        {
+            Console.Write("Введите число k: ");
+            int k = Convert.ToInt32(Console.ReadLine());
+
+            switch (k)
+            {
+                case 1:
+                    Console.Write("Введите полупериметр: ");
+                    double p1;
+                    p1 = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите длинy: ");
+                    double l1;
+                    l1 = Convert.ToDouble(Console.ReadLine());
+                    double S1 = p1 * l1;
+                    Console.WriteLine(S1);
+                    break;
+                case 2:
+                    Console.Write("Введите полупериметр: ");
+                    double p2;
+                    p2 = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите высоту: ");
+                    double h1;
+                    h1 = Convert.ToDouble(Console.ReadLine());
+                    double S2 = p2 * (h1 / 2);
+                    Console.WriteLine(S2);
+                    break;
+                case 3:
+                    Console.Write("Введите радиус: ");
+                    double R;
+                    R = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите высоту: ");
+                    double h2;
+                    h2 = Convert.ToDouble(Console.ReadLine());
+                    double S3 = 2 * Math.PI * R * h2;
+                    Console.WriteLine(S3);
+                    break;
+                case 4:
+                    Console.Write("Введите радиус: ");
+                    double R2;
+                    R2 = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите длину: ");
+                    double l2;
+                    l2 = Convert.ToDouble(Console.ReadLine());
+                    double S4 = 2 * Math.PI * R2 * l2;
+                    Console.WriteLine(S4);
+                    break;
+                case 5:
+                    Console.Write("Введите радиус: ");
+                    double R3;
+                    R3 = Convert.ToDouble(Console.ReadLine());
+                    double S5 = Math.PI * R3 * R3;
+                    Console.WriteLine(S5);
+                    break;
+                case 6:
+                    Console.Write("Введите радиус: ");
+                    double R6;
+                    R6 = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите высоту: ");
+                    double h3;
+                    h3 = Convert.ToDouble(Console.ReadLine());
+                    Console.Write("Введите сторону: ");
+                    double a6;
+                    a6 = Convert.ToDouble(Console.ReadLine());
+                    double S6 = Math.PI * R6 * (2 * h3 + a6);
+                    Console.WriteLine(S6);
+                    break;
+                default:
+                    break;
+            }
+        }
+        static void Fifth() // Задание 2
+        {
+            airplane air;
+            air.name = "Aeroflot";
+            air.year = 2025;
+            air.amount = 52;
+            air.DisplayInfo();
+            Console.ReadKey();
+        }
+        struct airplane
+        {
+            public string name;
+            public int year;
+            public int amount;
+            public void DisplayInfo()
+            {
+                Console.WriteLine($"Название самолета: {name}, Год выпуска: {year}, Кол-во мест: {amount}");
+            }
+        }
+    }
+    
+}
