@@ -1,0 +1,581 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.AxHost;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace NETFramework_cs
+{
+    struct Airplane
+    {
+        public string AirlineName;    // Авиакомпания
+        public string Model;          // Модель самолёта
+        public int Year;              // Год выпуска самолёта
+        public int Seats;             // Количество мест
+
+        public string Show()
+        {
+            return ($"Авиакомпания: {AirlineName}, Модель: {Model}, Год выпуска: {Year}, Вместимость: {Seats} мест");
+        }
+    }
+
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void btnTASK1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double x = double.Parse(txtX.Text);
+                double y = double.Parse(txtY.Text);
+                double z = double.Parse(txtZ.Text);
+
+                panelX.BackColor = Color.Green;
+                panelY.BackColor = Color.Green;
+                panelZ.BackColor = Color.Green;
+
+                double znam = z + Math.Pow(x, 2) / 4;
+                string resultA;
+                if (Math.Abs(znam) == 0)
+                {
+                    resultA = "Ошибка: знаменатель a = 0";
+                    panelX.BackColor = Color.Red;
+                    panelZ.BackColor = Color.Red;
+                }
+                else
+                    resultA = Math.Log(Math.Abs((y - Math.Sqrt(Math.Abs(x))) * (x - y / znam))).ToString("F4");
+
+                string resultB;
+                if (Math.Abs(x) == 0)
+                {
+                    resultB = "Ошибка: знаменатель b = 0";
+                    panelX.BackColor = Color.Red;
+                }
+                else
+                    resultB = (x - Math.Pow(x, 2) / 3 + (x + y) / x).ToString("F4");
+
+                txtResultA.Text = resultA;
+                txtResultB.Text = resultB;
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);  
+                panelX.BackColor = Color.Orange;
+                panelY.BackColor = Color.Orange;
+                panelZ.BackColor = Color.Orange;
+
+            }
+        }
+
+        private void btnTASK2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double rad = double.Parse(txtRad.Text);
+
+                if (rad < 0)
+                {
+                    MessageBox.Show("Радиус не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelRad.BackColor = Color.Red;
+                    return;
+                }
+
+                double C = 2 * Math.PI * rad;
+                double S = Math.PI * rad * rad;
+                double V = (4.0 / 3.0) * Math.PI * Math.Pow(rad, 3);
+
+                panelRad.BackColor = Color.Green;
+
+                txtC.Text = C.ToString("F4");
+                txtS.Text = S.ToString("F4");
+                txtV.Text = V.ToString("F4");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректное число", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelRad.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double a = double.Parse(txtFirst.Text);
+                double b = double.Parse(txtSecond.Text);
+                double c = double.Parse(txtThird.Text);
+
+                panelFirst.BackColor = Color.Green;
+                panelSecond.BackColor = Color.Green;
+                panelThird.BackColor = Color.Green;
+
+                double max = Math.Max(a, Math.Max(b, c));
+                double min = Math.Min(a, Math.Min(b, c));
+                double mid = a + b + c - max - min;
+
+                txtMax.Text = max.ToString("F4");
+                txtIncreasing.Text = $"{min:F2}, {mid:F2}, {max:F2}";
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelFirst.BackColor = Color.Orange;
+                panelSecond.BackColor = Color.Orange;
+                panelThird.BackColor = Color.Orange;
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtResultA_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void label10_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label13_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label20_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label18_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label19_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabPage10_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnTASK4K1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double P1 = double.Parse(txtK1P.Text);
+                double L1 = double.Parse(txtK1L.Text);
+
+                if (P1 <= 0 && L1 <= 0)
+                {
+                    MessageBox.Show("Полупериметр и длина не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK1P.BackColor = Color.Red;
+                    panelK1L.BackColor = Color.Red;
+                    return;
+                }
+
+                if (P1 <= 0)
+                {
+                    MessageBox.Show("Полупериметр не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK1P.BackColor = Color.Red;
+                    panelK1L.BackColor = Color.Green;
+                    return;
+                }
+                if (L1 <= 0)
+                {
+                    MessageBox.Show("Длина не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK1L.BackColor = Color.Red;
+                    panelK1P.BackColor = Color.Green;
+                    return;
+                }
+                
+                panelK1P.BackColor = Color.Green;
+                panelK1L.BackColor = Color.Green;
+
+                double S1 = P1 * L1;
+                txtK1S.Text = S1.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK1P.BackColor = Color.Orange;
+                panelK1L.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK4K2_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double P2 = double.Parse(txtK2P.Text);
+                double H2 = double.Parse(txtK2H.Text);
+
+                if (P2 <= 0 && H2 <= 0)
+                {
+                    MessageBox.Show("Полупериметр и высота не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK2P.BackColor = Color.Red;
+                    panelK2H.BackColor = Color.Red;
+                    return;
+                }
+
+                if (P2 <= 0)
+                {
+                    MessageBox.Show("Полупериметр не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK2P.BackColor = Color.Red;
+                    panelK2H.BackColor = Color.Green;
+                    return;
+                }
+                if (H2 <= 0)
+                {
+                    MessageBox.Show("Высота не может быть отрицательной", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK2H.BackColor = Color.Red;
+                    panelK2P.BackColor = Color.Green;
+                    return;
+                }
+
+                panelK2P.BackColor = Color.Green;
+                panelK2H.BackColor = Color.Green;
+
+                double S2 = P2 * (H2/2);
+                txtK2S.Text = S2.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK2P.BackColor = Color.Orange;
+                panelK2H.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK4K3_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double R3 = double.Parse(txtK3R.Text);
+                double H3 = double.Parse(txtK3H.Text);
+
+                if (R3 <= 0 && H3 <= 0)
+                {
+                    MessageBox.Show("Радиус и высота не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK3R.BackColor = Color.Red;
+                    panelK3H.BackColor = Color.Red;
+                    return;
+                }
+
+                if (R3 <= 0)
+                {
+                    MessageBox.Show("Радиус не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK3R.BackColor = Color.Red;
+                    panelK3H.BackColor = Color.Green;
+                    return;
+                }
+                if (H3 <= 0)
+                {
+                    MessageBox.Show("Высота не может быть отрицательной", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK3H.BackColor = Color.Red;
+                    panelK3R.BackColor = Color.Green;
+                    return;
+                }
+
+                panelK3R.BackColor = Color.Green;
+                panelK3H.BackColor = Color.Green;
+
+                double S3 = 2 * Math.PI * R3 * H3;
+                txtK3S.Text = S3.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK3R.BackColor = Color.Orange;
+                panelK3H.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK4K4_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double R4 = double.Parse(txtK4R.Text);
+                double L4 = double.Parse(txtK4L.Text);
+
+                if (R4 <= 0 && L4 <= 0)
+                {
+                    MessageBox.Show("Радиус и длина не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK4R.BackColor = Color.Red;
+                    panelK4L.BackColor = Color.Red;
+                    return;
+                }
+
+                if (R4 <= 0)
+                {
+                    MessageBox.Show("Радиус не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK4R.BackColor = Color.Red;
+                    panelK4L.BackColor = Color.Green;
+                    return;
+                }
+                if (L4 <= 0)
+                {
+                    MessageBox.Show("Длина не может быть отрицательной", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK4L.BackColor = Color.Red;
+                    panelK4R.BackColor = Color.Green;
+                    return;
+                }
+
+                panelK4R.BackColor = Color.Green;
+                panelK4L.BackColor = Color.Green;
+
+                double S4 = 2 * Math.PI * R4 * L4;
+                txtK4S.Text = S4.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK4R.BackColor = Color.Orange;
+                panelK4L.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK4K5_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double R5 = double.Parse(txtK5R.Text);    
+
+                if (R5 <= 0)
+                {
+                    MessageBox.Show("Радиус не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK5R.BackColor = Color.Red;
+                    return;
+                }
+
+                panelK5R.BackColor = Color.Green;
+                
+                double S5 = Math.PI * Math.Pow(R5, 2);
+                txtK5S.Text = S5.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK5R.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK4K6_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                double R6 = double.Parse(txtK6R.Text);
+                double H6 = double.Parse(txtK6H.Text);
+                double A6 = double.Parse(txtK6A.Text);
+
+                if (R6 <= 0 && H6 <= 0 && A6<= 0)
+                {
+                    MessageBox.Show("Радиус и высота и сторона не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6R.BackColor = Color.Red;
+                    panelK6H.BackColor = Color.Red;
+                    panelK6A.BackColor = Color.Red;
+                    return;
+                }
+
+                if (R6 <= 0 && H6 <= 0)
+                {
+                    MessageBox.Show("Радиус и высота не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6R.BackColor = Color.Red;
+                    panelK6H.BackColor = Color.Red;
+                    panelK6A.BackColor = Color.Green;
+                    return;
+                }
+
+                if (R6 <= 0 && A6 <= 0)
+                {
+                    MessageBox.Show("Радиус и сторона не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6R.BackColor = Color.Red;
+                    panelK6H.BackColor = Color.Green;
+                    panelK6A.BackColor = Color.Red;
+                    return;
+                }
+
+                if (H6 <= 0 && A6 <= 0)
+                {
+                    MessageBox.Show("Высота и сторона не могут быть отрицательными", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6R.BackColor = Color.Green;
+                    panelK6H.BackColor = Color.Red;
+                    panelK6A.BackColor = Color.Red;
+                    return;
+                }
+
+                if (R6 <= 0)
+                {
+                    MessageBox.Show("Радиус не может быть отрицательным", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6R.BackColor = Color.Red;
+                    panelK6H.BackColor = Color.Green;
+                    panelK6A.BackColor = Color.Green;
+                    return;
+                }
+
+                if (H6 <= 0)
+                {
+                    MessageBox.Show("Высота не может быть отрицательной", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6H.BackColor = Color.Red;
+                    panelK6R.BackColor = Color.Green;
+                    panelK6A.BackColor = Color.Green;
+                    return;
+                }
+
+                if (A6 <= 0)
+                {
+                    MessageBox.Show("Длина не может быть отрицательной", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelK6A.BackColor = Color.Red;
+                    panelK6R.BackColor = Color.Green;
+                    panelK6H.BackColor = Color.Green;
+                    return;
+                }
+
+                panelK6R.BackColor = Color.Green;
+                panelK6H.BackColor = Color.Green;
+                panelK6A.BackColor = Color.Green;
+
+                double S6 = Math.PI * R6 * (2 * H6 + A6);
+                txtK6S.Text = S6.ToString("F3");
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelK4R.BackColor = Color.Orange;
+                panelK4L.BackColor = Color.Orange;
+            }
+        }
+
+        private void btnTASK5_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Airplane airplane;
+
+                airplane.AirlineName = txtTASK5AVIA.Text;
+                airplane.Model = txtTASK5MODEL.Text;
+
+                int YearS = int.Parse(txtTASK5YEAR.Text);
+                int SeatsS = int.Parse(txtTASK5SEATS.Text);
+
+                if (YearS <= 0)
+                {
+                    MessageBox.Show("Год выпуска не может быть отрицательным, введите корректное число", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelTASK5YEAR.BackColor = Color.Red;
+                    return;
+                }
+                airplane.Year = YearS;
+
+                if (SeatsS < 0)
+                {
+                    MessageBox.Show("Количество мест не может быть отрицательным, введите корректное число", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    panelTASK5SEATS.BackColor = Color.Red;
+                    return;
+                }
+
+                airplane.Seats = SeatsS;
+
+                panelTASK5YEAR.BackColor = Color.Green;
+                panelTASK5SEATS.BackColor = Color.Green;
+
+                txtTASK5INFO.Text = airplane.Show();
+            }
+            catch
+            {
+                MessageBox.Show("Введите корректные числа", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                panelTASK5YEAR.BackColor = Color.Yellow;
+                panelTASK5SEATS.BackColor = Color.Yellow;
+            }
+        }
+    }
+}
