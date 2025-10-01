@@ -10,9 +10,10 @@ namespace NETFramework_cs_3
     {
         static void Main()
         {
+            int choice;
+            startMenu:
             try
-            {
-                int choice;
+            {    
                 do
                 {
                     Console.WriteLine("\nВыберите действие (1-3) или 0 для выхода:");
@@ -47,6 +48,7 @@ namespace NETFramework_cs_3
             catch
             {
                 Console.WriteLine("Ошибка. Введите число");
+                goto startMenu;
             }
 
         }
@@ -79,13 +81,14 @@ namespace NETFramework_cs_3
         static void Second()
         {
             int k, Count_2 = 0;
+            startSecond:
             Console.Write("Введите число K: ");
             string input = Console.ReadLine();
 
             if (!int.TryParse(input, out k) || k < 1)
             {
-                Console.WriteLine("Ошибка: введите целое число больше 0.");
-                return;
+                Console.WriteLine("Ошибка. K должно быть целым числом и больше 0.");
+                goto startSecond;
             }
 
             Console.WriteLine($"Числа от 1 до {k}, которые оканчиваются на 3:");
@@ -100,8 +103,6 @@ namespace NETFramework_cs_3
             }
 
             if (Count_2 == 0) Console.WriteLine("Таких чисел не сущетсвует");
-
-            Console.WriteLine();
         }
 
         static void Third()
