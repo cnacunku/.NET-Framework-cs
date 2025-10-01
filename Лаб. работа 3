@@ -47,7 +47,7 @@ namespace NETFramework_cs_3
             }
             catch
             {
-                Console.WriteLine("Ошибка. Введите число");
+                Console.WriteLine("Ошибка. Введите целочисленное число");
                 goto startMenu;
             }
 
