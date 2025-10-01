@@ -103,11 +103,13 @@ namespace NETFramework_cs_3
             }
 
             if (Count_2 == 0) Console.WriteLine("Таких чисел не сущетсвует");
+
+            Console.WriteLine();
         }
 
         static void Third()
         {
-            int number, Сount_3 = 0;
+            double number, Сount_3 = 0;
 
             Console.Write("Введите последовательность чисел, заканчивающуюся 0\n");
 
@@ -117,7 +119,7 @@ namespace NETFramework_cs_3
                 Console.Write("Введите число: ");
                 string input = Console.ReadLine();
 
-                if (!int.TryParse(input, out number))
+                if (!double.TryParse(input, out number))
                 {
                     Console.WriteLine("Ошибка, вы ввели не число");
                     goto startInput;
