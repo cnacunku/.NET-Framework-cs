@@ -38,7 +38,7 @@ namespace NETFramework_cs_3_WF
                 n++;
             }
 
-            txt5res.Text = sum.ToString("F6");
+            txt5res.Text = sum.ToString("F15");
         }
 
         private void btn6_Click(object sender, EventArgs e)
