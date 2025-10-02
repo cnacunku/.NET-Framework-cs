@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp8
+{
+    internal class Program
+    {
+        static void Main()
+        {
+            Console.Write("Введите длину n для одномерного массива: ");
+            int n = Convert.ToInt32(Console.ReadLine());
+
+            double[] array_1 = new double[n];
+
+            Random rnd = new Random();
+
+            for (int i = 0; i < n; i++)
+            {
+                int k = rnd.Next(0, 9);
+
+                array_1[i] = (Math.Pow(-1, k)) * 1 / (n * Math.Sqrt(Math.Pow(3, k)));
+
+                Console.WriteLine($"array[{i}], k = {k}, {array_1[i]:F3}");
+            }
+
+            Console.Write("Введите длину m для двумерного массива: ");
+            int m = Convert.ToInt32(Console.ReadLine());
+
+            double[,] array_2 = new double[n, m];
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    int k = rnd.Next(0, 9);
+
+                    array_2[i, j] = (Math.Pow(-1, k)) * 1 / (n * Math.Sqrt(Math.Pow(3, k)));
+
+                    Console.WriteLine($"array[{i}, {j}], k = {k}, {array_2[i, j]:F3}");
+
+                }     
+            }
+        }
+    }
+}
