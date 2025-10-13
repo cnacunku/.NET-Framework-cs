@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_4_WF
+{
+    public partial class NETFramework_cs_4_WF : Form
+    {
+        private string[][] objects;
+        public NETFramework_cs_4_WF()
+        {
+            InitializeComponent();
+            InitializeObjects();
+        }
+
+        private void InitializeObjects()
+        {
+            objects = new string[3][];
+
+            objects[0] = new string[3];
+            objects[1] = new string[5];
+            objects[2] = new string[4];
+        }
+
+        private void btn1INFO_Click(object sender, EventArgs e)
+        {
+            string model = txtM.Text.Trim();
+            double speed;
+            double weight;
+
+            if (string.IsNullOrEmpty(model))
+            {
+                MessageBox.Show("Ошибка, введите модель вертолёта");
+                txtM.Focus();
+                return;
+            }
+
+            if (!double.TryParse(txtS.Text, out speed) || speed < 0)
+            {
+                MessageBox.Show("Ошибка, введите положительное значение скорости");
+                txtS.Focus();
+                return;
+            }
+
+            if (!double.TryParse(txtG.Text, out weight) || weight < 0)
+            {
+                MessageBox.Show("Ошибка, введите положительное значение грузоподъёмности");
+                txtG.Focus();
+                return;
+            }
+
+            objects[0][0] = model;
+            objects[0][1] = speed.ToString();
+            objects[0][2] = weight.ToString();
+
+            lbx1R.Items.Clear();
+            lbx1R.Items.Add("Марка: " + objects[0][0]);
+            lbx1R.Items.Add("Скорость: " + objects[0][1] + " км/ч");
+            lbx1R.Items.Add("Грузоподъёмность: " + objects[0][3] + " кг");
+        }
+
+        private void btn1SBROS_Click(object sender, EventArgs e)
+        {
+            txtM.Text = "";
+            txtS.Text = "";
+            txtG.Text = "";
+
+            lbx1R.Items.Clear();
+            lbx1R.Items.Add("Модель:");
+            lbx1R.Items.Add("Скорость:");
+            lbx1R.Items.Add("Грузоподъёмность:");
+        }
+
+        private void btn2INFO_Click(object sender, EventArgs e)
+        {
+            string city = txtGOROD.Text.Trim(), name = txtNA.Text.Trim();
+            int year, workers;
+            double area;
+            
+
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("Ошибка, введите название завода");
+                txtNA.Focus();
+                return;
+            }
+
+            if (!int.TryParse(txtGO.Text, out year) || year < 0)
+            {
+                MessageBox.Show("Ошибка, введите целое положительное число года основания");
+                txtGO.Focus();
+                return;
+            }
+
+            if (!int.TryParse(txtKO.Text, out workers) || workers < 0)
+            {
+                MessageBox.Show("Ошибка, введите целое положительное число количества рабочих");
+                txtKO.Focus();
+                return;
+            }
+
+            if (!double.TryParse(txtPL.Text, out area) || area < 0)
+            {
+                MessageBox.Show("Ошибка, введите положительное значение площади");
+                txtPL.Focus();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(city))
+            {
+                MessageBox.Show("Ошибка, введите город завода");
+                txtGOROD.Focus();
+                return;
+            }
+
+            objects[1][0] = name;
+            objects[1][1] = year.ToString();
+            objects[1][2] = workers.ToString();
+            objects[1][3] = area.ToString();
+            objects[1][4] = city;
+
+            lbx2R.Items.Clear();
+            lbx2R.Items.Add("Название: " + objects[1][0]);
+            lbx2R.Items.Add("Год основания: " + objects[1][1]);
+            lbx2R.Items.Add("Количество рабочих: " + objects[1][2]);
+            lbx2R.Items.Add("Площадь: " + objects[1][3] + " м^2");
+            lbx2R.Items.Add("Город: " + objects[1][4]);
+        }
+
+        private void btn2SBROS_Click(object sender, EventArgs e)
+        {
+            txtNA.Text = "";
+            txtGO.Text = "";
+            txtKO.Text = "";
+            txtPL.Text = "";
+            txtGOROD.Text = "";
+
+            lbx2R.Items.Clear();
+            lbx2R.Items.Add("Название:");
+            lbx2R.Items.Add("Год основания:");
+            lbx2R.Items.Add("Количество рабочих:");
+            lbx2R.Items.Add("Площадь:");
+            lbx2R.Items.Add("Город:");
+        }
+        private void btn3INFO_Click(object sender, EventArgs e)
+        {
+            string surname = txtFA.Text.Trim();
+            string name = txtIM.Text.Trim();
+            string subject = txtPR.Text.Trim();
+            int exp;
+
+            if (string.IsNullOrEmpty(surname))
+            {
+                MessageBox.Show("Ошибка, введите фамилию преподавателя");
+                txtFA.Focus();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                MessageBox.Show("Ошибка, введите имя преподавателя");
+                txtIM.Focus();
+                return;
+            }
+
+            if (!int.TryParse(txtST.Text, out exp) || exp < 0)
+            {
+                MessageBox.Show("Ошибка, введите целое положительное число количества лет работы");
+                txtST.Focus();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(subject))
+            {
+                MessageBox.Show("Ошибка, введите предмет преподавателя");
+                txtPR.Focus();
+                return;
+            }
+
+            objects[2][0] = surname;
+            objects[2][1] = name;
+            objects[2][2] = exp.ToString();
+            objects[2][3] = subject;
+
+            lbx3R.Items.Clear();
+            lbx3R.Items.Add("Фамилия: " + objects[2][0]);
+            lbx3R.Items.Add("Имя: " + objects[2][1]);
+            lbx3R.Items.Add("Стаж(в годах): " + objects[2][2]);
+            lbx3R.Items.Add("Предмет: " + objects[2][3]);
+        }
+
+        private void btn3SBROS_Click(object sender, EventArgs e)
+        {
+            txtFA.Text = "";
+            txtIM.Text = "";
+            txtST.Text = "";
+            txtPR.Text = "";
+
+            lbx3R.Items.Clear();
+            lbx3R.Items.Add("Фамилия:");
+            lbx3R.Items.Add("Имя:");
+            lbx3R.Items.Add("Стаж(в годах): ");
+            lbx3R.Items.Add("Предмет:");
+        }
+    }
+}
