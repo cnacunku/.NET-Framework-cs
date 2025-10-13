@@ -1,0 +1,332 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security.Policy;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace NETFramework_cs_4
+{
+    internal class NETFramework_cs_4
+    {
+        static void Main()
+        {
+            int choice;
+        startMenu:
+            try
+            {
+                do
+                {
+                    Console.WriteLine("\nВыберите действие (1-4) или 0 для выхода:");
+                    Console.WriteLine("1. Задание 1.1 - Сформировать массивы n, n*m, по заданным правилам, где k - случайное число");
+                    Console.WriteLine("2. Задание 1.2 - Подсчёт элементов > t в массивах A и B");
+                    Console.WriteLine("3. Задание 1.3 - Сумма и количество неотрицательных элементов в матрице");
+                    Console.WriteLine("4. Задание 1.4 - Сортировка элементов массива методом простого обмена");
+                    Console.WriteLine("0. Выход");
+                    Console.Write("Выберите действие: ");
+
+                    choice = Convert.ToInt32(Console.ReadLine());
+
+                    switch (choice)
+                    {
+                        case 1:
+                            First();
+                            break;
+                        case 2:
+                            Second();
+                            break;
+                        case 3:
+                            Third();
+                            break;
+                        case 4:
+                            Fourth();
+                            break;
+                        case 0:
+                            Console.WriteLine("Выход из программы");
+                            break;
+                        default:
+                            Console.WriteLine("Несуществующее действие, попробуйте снова");
+                            break;
+                    }
+                } while (choice != 0);
+            }
+            catch
+            {
+                Console.WriteLine("Ошибка. Введите целочисленное число");
+                goto startMenu;
+            }
+
+        }
+
+        static void First()
+        {
+            int n_1;
+        startFirst_1:
+            Console.Write("Введите длину n для одномерного массива: ");
+            if (!int.TryParse(Console.ReadLine(), out n_1) || n_1 <= 0)
+            {
+                Console.WriteLine("Ошибка. n должно быть целым числом и больше 0");
+                goto startFirst_1;
+            }
+
+            double[] array_1 = new double[n_1];
+
+            for (int i = 0; i < n_1; i++)
+            {
+                int k = rnd.Next(0, 9);
+                array_1[i] = (Math.Pow(-1, k)) * 1 / (n_1 * Math.Sqrt(Math.Pow(3, k)));
+                Console.WriteLine($"k = {k}: array[{i}] = {array_1[i]:F3}");
+            }
+            
+            int m;
+        startFirst_2:
+            Console.Write("Введите длину m для двумерного массива: ");
+            if (!int.TryParse(Console.ReadLine(), out m) || m <= 0)
+            {
+                Console.WriteLine("Ошибка. m должно быть целым числом и больше 0");
+                goto startFirst_2;
+            }
+
+            double[,] array_2 = new double[n_1, m];
+
+            for (int i = 0; i < n_1; i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    int k = rnd.Next(0, 9);
+                    array_2[i, j] = (Math.Pow(-1, k)) * 1 / (n_1 * Math.Sqrt(Math.Pow(3, k)));
+                    Console.WriteLine($"k = {k}: array[{i}, {j}] = {array_2[i, j]:F3}");
+
+                }
+            }
+        }
+        static void Second()
+        {
+            int sizeA_2, sizeB_2;
+            while (true)
+            {
+                Console.Write("Введите размер массива A: ");
+                if (int.TryParse(Console.ReadLine(), out sizeA_2) && sizeA_2 > 0)
+                    break;
+                Console.WriteLine("Ошибка. Размер должнен быть целым числом и больше 0.");
+            }
+
+            while (true)
+            {
+                Console.Write("Введите размер массива B: ");
+                if (int.TryParse(Console.ReadLine(), out sizeB_2) && sizeB_2 > 0)
+                    break;
+                Console.WriteLine("Ошибка. Размер должнен быть целым числом и больше 0.");
+            }
+
+            int choice_2;
+            while (true)
+            {
+                Console.Write("(1) Ввести массивы вручную; (2) Заполинить массивы случайными числами: ");
+                if (int.TryParse(Console.ReadLine(), out choice_2) && (choice_2 == 1 || choice_2 == 2))
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Несуществующий выбор, введите 1 или 2.\n");
+                }
+            }
+
+            double[] A_2 = new double[sizeA_2];
+            double[] B_2 = new double[sizeB_2];
+
+            FillArray1D(A_2, "A", choice_2);
+            FillArray1D(B_2, "B", choice_2);
+
+            double t;
+            while (true)
+            {
+                Console.Write("\nВведите значение t: ");
+                if (double.TryParse(Console.ReadLine(), out t))
+                    break;
+                Console.WriteLine("Ошибка. Введите число");
+            }
+
+            int countA_2 = A_2.Count(x => x > t);
+            int countB_2 = B_2.Count(x => x > t);
+
+            Console.WriteLine($"Количество элементов > t в массивах: A: {countA_2}, B: {countB_2}");
+
+            if (countA_2 < countB_2)
+            {
+                Console.WriteLine($"Первым на печать выходит массив A, имеющий наименьшее их количество");
+                Console.WriteLine("A: " + string.Join(" ", A_2));
+                Console.WriteLine("B: " + string.Join(" ", B_2));
+
+            }
+            else if (countB_2 < countA_2)
+            {
+                Console.WriteLine($"Первым на печать выходит массив B, имеющий наименьшее их количество");
+                Console.WriteLine("B: " + string.Join(" ", B_2));
+                Console.WriteLine("A: " + string.Join(" ", A_2));
+            }
+            else
+            {
+                Console.WriteLine("\nКоличества равны. Оба массива:");
+                Console.WriteLine("A: " + string.Join(" ", A_2));
+                Console.WriteLine("B: " + string.Join(" ", B_2));
+            }
+        }
+
+        static void Third()
+        {
+            int n_3;
+            while (true)
+            {
+                Console.Write("Введите размер массива n: ");
+                if (int.TryParse(Console.ReadLine(), out n_3) && n_3 > 0)
+                    break;
+                Console.WriteLine("Ошибка! Введите положительное целое число.");
+            }
+
+            int choice_3;
+            while (true)
+            {
+                Console.Write("(1) Ввести массив вручную; (2) Заполинить массив случайными числами: ");
+                if (int.TryParse(Console.ReadLine(), out choice_3) && (choice_3 == 1 || choice_3 == 2))
+                {
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Несуществующий выбор, введите 1 или 2.\n");
+                }
+            }
+
+            double[,] A_3 = new double[n_3, n_3];
+
+            FillArray2D(A_3, "A", choice_3);
+
+            double sum = 0;
+            int count = 0;
+
+            for (int i = 0; i < n_3; i++)
+            {
+                for (int j = 0; j < n_3; j++)
+                {
+                    Console.Write($"{A_3[i, j],4}");
+                    if (A_3[i, j] >= 0)
+                    {
+                        sum += A_3[i, j];
+                        count++;
+                    }
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine($"\nСумма всех неотрицательных элементов: {sum}");
+            Console.WriteLine($"Количество неотрицательных элементов: {count}");
+        }
+
+        static void Fourth()
+        {
+            int n_4 ;
+            while (true)
+            {
+                Console.Write("Введите размер массива для сортировки: ");
+                if (int.TryParse(Console.ReadLine(), out n_4) && n_4 > 0)
+                    break;
+                Console.WriteLine("Ошибка! Введите положительное целое число.");
+            }
+
+            int choice_4;
+            while (true)
+            {
+                Console.Write("(1) Ввести массив вручную; (2) Заполнить массив случайными числами: ");
+                if (int.TryParse(Console.ReadLine(), out choice_4) && (choice_4 == 1 || choice_4 == 2))
+                    break;
+                Console.WriteLine("Несуществующий выбор, введите 1 или 2.");
+            }
+
+            double[] arr = new double[n_4];
+
+            FillArray1D(arr, "A", choice_4);
+
+            Console.WriteLine("\nИсходный массив:");
+            for (int i = 0; i < n_4; i++)
+                Console.Write(arr[i] + " ");
+            Console.WriteLine();
+
+            for (int i = 0; i < n_4 - 1; i++)
+            {
+                for (int j = 0; j < n_4 - i - 1; j++)
+                {
+                    if (arr[j] > arr[j + 1])
+                    {
+                        double temp = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = temp;
+                    }
+                }
+            }
+
+            Console.WriteLine("\nОтсортированный массив:");
+            for (int i = 0; i < n_4; i++)
+                Console.Write(arr[i] + " ");
+            Console.WriteLine();
+        }
+
+        static Random rnd = new Random();
+        static void FillArray1D(double[] arr, string name, int choice)
+        {
+            if (choice == 1)
+            {
+                Console.WriteLine($"Введите {arr.Length} элементов массива {name}:");
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    while (true)
+                    {
+                        Console.Write($"{name}[{i}] = ");
+                        if (double.TryParse(Console.ReadLine(), out arr[i]))
+                            break;
+                        Console.WriteLine("Ошибка. Введите число");
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < arr.Length; i++)
+                    arr[i] = rnd.Next(-50, 50);
+                Console.WriteLine($"Массив {name} заполнен случайными числами(От -50 до 50");
+            }
+        }
+        static void FillArray2D(double[,] arr, string name, int choice)
+        {
+            if (choice == 1)
+            {
+                for (int i = 0; i < arr.GetLength(0); i++)
+                {
+                    for (int j = 0; j < arr.GetLength(1); j++)
+                    {
+                        while (true)
+                        {
+                            Console.Write($"{name}[{i},{j}] = ");
+                            if (double.TryParse(Console.ReadLine(), out arr[i, j]))
+                                break;
+                            Console.WriteLine("Ошибка. Введите число");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < arr.GetLength(0); i++)
+                {
+                    for (int j = 0; j < arr.GetLength(1); j++)
+                    {
+                        arr[i, j] = rnd.Next(-50, 51);
+                    }
+                }
+                Console.WriteLine($"Массив {name} заполнен случайными числами(От -50 до 50");
+            }
+        }
+    }
+}
