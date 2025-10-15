@@ -62,7 +62,7 @@ namespace NETFramework_cs_4_WF
             lbx1R.Items.Clear();
             lbx1R.Items.Add("Марка: " + objects[0][0]);
             lbx1R.Items.Add("Скорость: " + objects[0][1] + " км/ч");
-            lbx1R.Items.Add("Грузоподъёмность: " + objects[0][3] + " кг");
+            lbx1R.Items.Add("Грузоподъёмность: " + objects[0][2] + " кг");
         }
 
         private void btn1SBROS_Click(object sender, EventArgs e)
