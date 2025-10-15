@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_5_WF
+{
+    public partial class NETFramework_cs_5_WF : Form
+    {
+        public NETFramework_cs_5_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void btn1_Click(object sender, EventArgs e)
+        {
+            string word = txtV1.Text.Trim();
+
+            if (string.IsNullOrEmpty(word))
+            {
+                MessageBox.Show("Пустой ввод. Попробуйте снова");
+                return;
+            }
+
+            if (word.Any(c => char.IsDigit(c)))
+            {
+                MessageBox.Show("Слово не может содержать цифры. Попробуйте снова");
+                return;
+            }
+
+            if (word.Length % 2 == 1)
+            {
+                int mid = word.Length / 2;
+                word = word.Insert(mid + 1, word[mid].ToString());
+            }
+
+            txtR1.Text = word;
+        }
+
+        private void btn2_Click(object sender, EventArgs e)
+        {
+            string input = txtV2.Text.Trim();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                MessageBox.Show("Последовательность пуста, введите снова");
+                return;
+            }
+
+            if (!input.EndsWith("."))
+            {
+                MessageBox.Show("Последовательность должна заканчиваться точкой, попробуйте снова");
+                return;
+            }
+
+            string text = input.Substring(0, input.Length - 1).Trim();
+            string[] words = text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            List<string> validWords = new List<string>();
+            List<string> invalidWords = new List<string>();
+
+            foreach (var w in words)
+            {
+                if (w.All(c => c >= 'a' && c <= 'z') && w.Length >= 1 && w.Length <= 8)
+                    validWords.Add(w);
+                else
+                    invalidWords.Add(w);
+            }
+
+            if (validWords.Count < 2 || validWords.Count > 50)
+            {
+                MessageBox.Show("Число слов должно быть от 2 до 50");
+                return;
+            }
+
+            txt2I.Text = string.Join(", ", invalidWords);
+
+            string lastWord = validWords[validWords.Count - 1];
+            int minLen = validWords.Min(w => w.Length);
+
+            List<string> result2 = new List<string>();
+
+            foreach (var w in validWords)
+            {
+                if (w.Length == minLen && !w.Equals(lastWord))
+                    result2.Add(w);
+            }
+
+            txt2R.Text = result2.Count == 0
+                ? "Подходящих по всем условиям слов - не существует"
+                : string.Join(", ", result2);
+        }
+
+        private void btn3_Click(object sender, EventArgs e)
+        {
+            string input = txtV3.Text.Trim();
+
+            if (input.Length != 2)
+            {
+                MessageBox.Show("Некорректный ввод, введите снова");
+                return;
+            }
+
+            char letter = input[0];
+            char number = input[1];
+
+            if (letter < 'a' || letter > 'h' || number < '1' || number > '8')
+            {
+                MessageBox.Show("Некорректная координата, введите снова");
+                return;
+            }
+
+            int row = int.Parse(number.ToString());
+            int nextRow = row + 1;
+
+            if (nextRow > 8)
+            {
+                txtR3.Text = $"С поля {input} пешка не может бить вперед";
+                return;
+            }
+
+            List<string> result3 = new List<string>();
+            if (letter > 'a')
+                result3.Add($"{(char)(letter - 1)}{nextRow}");
+            if (letter < 'h')
+                result3.Add($"{(char)(letter + 1)}{nextRow}");
+
+            txtR3.Text = $"С поля {input} пешка может ударить на поле {string.Join(", ", result3)}";
+        }
+    }
+}
