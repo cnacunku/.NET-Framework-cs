@@ -1,0 +1,253 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NETFramework_cs_6
+{
+    internal class NETFramework_cs_6
+    {
+        static void Main()
+        {
+            int choice;
+        startMenu:
+            try
+            {
+                do
+                {
+                    Console.WriteLine("\nВыберите действие (1-3) или 0 для выхода:");
+                    Console.WriteLine("1. Задание 1 - Работа с коллекцией простых чисел (List<int>)");
+                    Console.WriteLine("2. Задание 2 - (зарезервировано)");
+                    Console.WriteLine("0. Выход");
+                    Console.Write("Выберите действие: ");
+
+                    choice = Convert.ToInt32(Console.ReadLine());
+
+                    switch (choice)
+                    {
+                        case 1:
+                            First();
+                            break;
+                        case 2:
+                            Console.WriteLine("Задание 2 пока не реализовано");
+                            break;
+                        case 0:
+                            Console.WriteLine("Выход из программы");
+                            break;
+                        default:
+                            Console.WriteLine("Несуществующее действие, попробуйте снова");
+                            break;
+                    }
+                } while (choice != 0);
+            }
+            catch
+            {
+                Console.WriteLine("Ошибка. Введите целое число!");
+                goto startMenu;
+            }
+        }
+        static void First()
+        {
+            List<int> numbers = new List<int>();
+            int choice;
+        Fmenu:
+            try
+            {
+                do
+                {
+                    Console.WriteLine("\n=== Меню управления коллекцией целых чисел ===");
+                    Console.WriteLine("1. Добавить число(а)");
+                    Console.WriteLine("2. Удалить число(а)");
+                    Console.WriteLine("3. Найти число");
+                    Console.WriteLine("4. Отсортировать коллекцию");
+                    Console.WriteLine("5. Вывести коллекцию");
+                    Console.WriteLine("0. Назад в главное меню");
+                    Console.Write("Выберите действие: ");
+                    choice = Convert.ToInt32(Console.ReadLine());
+                    switch (choice)
+                    {
+                        case 1:
+                            AddNum(numbers);
+                            break;
+                        case 2:
+                            DelNum(numbers);
+                            break;
+                        case 3:
+                            SearchNum(numbers);
+                            break;
+                        case 4:
+                            SortNum(numbers);
+                            break;
+                        case 5:
+                            ShowNum(numbers);
+                            break;
+                        case 0:
+                            Console.WriteLine("Возврат в главное меню ->");
+                            break;
+                        default:
+                            Console.WriteLine("Несуществующее действие, попробуйте снова");
+                            break;
+                    }
+                } while (choice != 0);
+            }
+            catch
+            {
+                Console.WriteLine("Ошибка. Введите целое число");
+                goto Fmenu;
+            }
+        }
+        static void AddNum(List<int> numbers)
+        {
+            Console.Write("Введите числа через пробел: ");
+            string input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                Console.WriteLine("Пустой ввод");
+                return;
+            }
+
+            string[] numberStrings = input.Split(' ');
+            List<int> addedNumbers = new List<int>();
+            List<string> invalidInputs = new List<string>();
+            List<int> duplicateNumbers = new List<int>();
+
+            foreach (string numberStr in numberStrings)
+            {
+                if (string.IsNullOrWhiteSpace(numberStr))
+                    continue;
+
+                if (int.TryParse(numberStr, out int num))
+                {
+                    if (numbers.Contains(num))
+                    {
+                        duplicateNumbers.Add(num);
+                    }
+                    else
+                    {
+                        numbers.Add(num);
+                        addedNumbers.Add(num);
+                    }
+                }
+                else
+                {
+                    invalidInputs.Add(numberStr);
+                }
+            }
+
+            if (addedNumbers.Count > 0)
+            {
+                string numbersText = string.Join(", ", addedNumbers);
+                Console.WriteLine($"Числа {numbersText} добавлены в коллекцию");
+            }
+
+            if (duplicateNumbers.Count > 0)
+            {
+                string duplicateText = string.Join(", ", duplicateNumbers);
+                Console.WriteLine($"Числа {duplicateText} уже есть в коллекции - пропускаем");
+            }
+
+            if (invalidInputs.Count > 0)
+            {
+                string invalidText = string.Join(", ", invalidInputs);
+                Console.WriteLine($"Некорректный ввод: {invalidText} - пропускаем");
+            }
+
+            if (addedNumbers.Count == 0 && duplicateNumbers.Count == 0 && invalidInputs.Count == 0)
+            {
+                Console.WriteLine("Не удалось добавить ни одного числа");
+            }
+        }
+
+        static void DelNum(List<int> numbers)
+        {
+            Console.Write("Введите числа для удаления через пробел: ");
+            string input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                Console.WriteLine("Пустой ввод");
+            }
+
+            string[] numberStrings = input.Split(' ');
+            List<int> removedNumbers = new List<int>();
+            List<int> notFoundNumbers = new List<int>();
+            List<string> invalidInputs = new List<string>();
+
+            foreach (string numberStr in numberStrings)
+            {
+                if (string.IsNullOrWhiteSpace(numberStr))
+                    continue;
+
+                if (int.TryParse(numberStr, out int num))
+                {
+                    if (numbers.Remove(num))
+                        removedNumbers.Add(num);
+                else
+                    notFoundNumbers.Add(num);
+                }
+                else
+                {
+                    invalidInputs.Add(numberStr);
+                }
+            }
+
+            if (removedNumbers.Count > 0)
+            {
+                string removedText = string.Join(", ", removedNumbers);
+                Console.WriteLine($"Числа {removedText} удалены из коллекции");
+            }
+
+            if (notFoundNumbers.Count > 0)
+            {
+                string notFoundText = string.Join(", ", notFoundNumbers);
+                Console.WriteLine($"Числа {notFoundText} не найдены в коллекции");
+            }
+
+            if (invalidInputs.Count > 0)
+            {
+                string invalidText = string.Join(", ", invalidInputs);
+                Console.WriteLine($"Некорректный ввод: {invalidText} - пропускаем");
+            }
+
+            if (removedNumbers.Count == 0 && notFoundNumbers.Count == 0 && invalidInputs.Count > 0)
+            {
+                Console.WriteLine("Не удалось обработать ни одного числа");
+            }
+        }
+
+        static void SearchNum(List<int> numbers)
+        {
+            int num;
+        F3:
+            Console.Write("Введите число для поиска: ");
+            if (int.TryParse(Console.ReadLine(), out num))
+            {
+                if (numbers.Contains(num))
+                    Console.WriteLine($"Число {num} найдено в коллекции");
+                else
+                    Console.WriteLine("Число не найдено");
+            }
+            else
+            {
+                Console.WriteLine("Некорректный ввод, попробуйте снова");
+                goto F3;
+            }
+        }
+
+        static void SortNum(List<int> numbers)
+        {
+            numbers.Sort();
+            Console.WriteLine("Коллекция отсортирована(в порядке увеличения)");
+        }
+
+        static void ShowNum(List<int> numbers)
+        {
+            if (numbers.Count == 0)
+                Console.WriteLine("Коллекция пуста");
+            else
+                Console.WriteLine("Коллекция целых чисел: " + string.Join(", ", numbers));
+        }
+    }
+}
