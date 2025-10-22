@@ -1,0 +1,473 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_6_WF
+{
+    public partial class NETFramework_cs_6_WF : Form
+    {
+        private int nextPlaneId = 1;
+        private List<int> numbers = new List<int>();
+        private List<PassengerPlane> planes_2 = new List<PassengerPlane>();
+        SortedList planes_3 = new SortedList();
+
+        public NETFramework_cs_6_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void UpdateCollectionDisplay()
+        {
+            txt1COL.Text = string.Join(", ", numbers);
+        }
+
+        private void UpdatePlanesCOL()
+        {
+            if (planes_2.Count == 0)
+            {
+                txt2COL.Text = "Коллекция пуста";
+                return;
+            }
+
+            txt2COL.Font = new Font("Consolas", 13f);
+
+            string line = "x" + new string('-', 68) + "x" + Environment.NewLine;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(line);
+            sb.AppendFormat("| {0,-23} | {1,-23} | {2,-6} | {3,-5} |{4}",
+                            "Авиакомпания", "Модель", "Год", "Мест", Environment.NewLine);
+            sb.Append(line);
+
+            foreach (var p in planes_2)
+            {
+                sb.AppendFormat("| {0,-23} | {1,-23} | {2,-6} | {3,-5} |{4}",
+                                p.AirlineName, p.Model, p.Year, p.Seats, Environment.NewLine);
+            }
+
+            sb.Append(line);
+            txt2COL.Text = sb.ToString();
+            txt2COL.SelectionStart = 0;
+            txt2COL.ScrollToCaret();
+        }
+
+        private void UpdateSortedPlanesCOL()
+        {
+            if (planes_3.Count == 0)
+            {
+                txt3COL.Text = "Коллекция пуста";
+                return;
+            }
+
+            txt3COL.Font = new Font("Consolas", 12f);
+            string line = "x" + new string('-', 73) + "x" + Environment.NewLine;
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append(line);
+            sb.AppendFormat("| {0,-4} | {1,-22} | {2,-22} | {3,-6} | {4,-5} |{5}",
+                            "iD", "Авиакомпания", "Модель", "Год", "Мест", Environment.NewLine);
+            sb.Append(line);
+
+            foreach (DictionaryEntry entry in planes_3)
+            {
+                int id = (int)entry.Key;
+                PassengerPlane p = (PassengerPlane)entry.Value;
+
+                sb.AppendFormat("| {0,-4} | {1,-22} | {2,-22} | {3,-6} | {4,-5} |{5}",
+                                id, p.AirlineName, p.Model, p.Year, p.Seats, Environment.NewLine);
+            }
+
+            sb.Append(line);
+            txt3COL.Text = sb.ToString();
+            txt3COL.SelectionStart = 0;
+            txt3COL.ScrollToCaret();
+        }
+
+        private void btn1ADD_Click(object sender, EventArgs e)
+        {
+            string input = txt1ADD.Text.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                txt1MSG.Text = "Пустой ввод";
+                return;
+            }
+
+            string[] parts = input.Split(' ');
+            List<int> added = new List<int>();
+            List<int> duplicates = new List<int>();
+            List<string> invalid = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (int.TryParse(part, out int num))
+                {
+                    if (numbers.Contains(num))
+                        duplicates.Add(num);
+                    else
+                    {
+                        numbers.Add(num);
+                        added.Add(num);
+                    }
+                }
+                else
+                    invalid.Add(part);
+            }
+
+            UpdateCollectionDisplay();
+
+            txt1MSG.Clear();
+            if (added.Count > 0)
+                txt1MSG.AppendText("Добавлено: " + string.Join(", ", added) + Environment.NewLine);
+            if (duplicates.Count > 0)
+                txt1MSG.AppendText("Уже есть: " + string.Join(", ", duplicates) + Environment.NewLine);
+            if (invalid.Count > 0)
+                txt1MSG.AppendText("Некорректный ввод: " + string.Join(", ", invalid) + Environment.NewLine);
+
+            txt1MSG.SelectionStart = 0;
+            txt1MSG.ScrollToCaret();
+        }
+
+        private void btn1DEL_Click(object sender, EventArgs e)
+        {
+            string input = txt1DEL.Text.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                txt1MSG.Text = "Пустой ввод";
+                return;
+            }
+
+            string[] parts = input.Split(' ');
+            List<int> removed = new List<int>();
+            List<int> notFound = new List<int>();
+            List<string> invalid = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (string.IsNullOrWhiteSpace(part)) continue;
+
+                if (int.TryParse(part, out int num))
+                {
+                    if (numbers.Remove(num))
+                        removed.Add(num);
+                    else
+                        notFound.Add(num);
+                }
+                else
+                    invalid.Add(part);
+            }
+
+            UpdateCollectionDisplay();
+
+            txt1MSG.Clear();
+            if (removed.Count > 0)
+                txt1MSG.AppendText("Удалено: " + string.Join(", ", removed) + Environment.NewLine);
+            if (notFound.Count > 0)
+                txt1MSG.AppendText("Не найдено: " + string.Join(", ", notFound) + Environment.NewLine);
+            if (invalid.Count > 0)
+                txt1MSG.AppendText("Некорректный ввод: " + string.Join(", ", invalid) + Environment.NewLine);
+
+            txt1MSG.SelectionStart = 0;
+            txt1MSG.ScrollToCaret();
+        }
+
+        private void btn1FIND_Click(object sender, EventArgs e)
+        {
+            string input = txt1FIND.Text.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                txt1MSG.Text = "Пустой ввод";
+                return;
+            }
+
+            string[] parts = input.Split(' ');
+            List<int> found = new List<int>();
+            List<int> notFound = new List<int>();
+            List<string> invalid = new List<string>();
+
+            foreach (var part in parts)
+            {
+                if (int.TryParse(part, out int num))
+                {
+                    if (numbers.Contains(num))
+                        found.Add(num);
+                    else
+                        notFound.Add(num);
+                }
+                else
+                    invalid.Add(part);
+            }
+
+            txt1MSG.Clear();
+            if (found.Count > 0)
+                txt1MSG.AppendText("Найдено: " + string.Join(", ", found) + Environment.NewLine);
+            if (notFound.Count > 0)
+                txt1MSG.AppendText("Не найдено: " + string.Join(", ", notFound) + Environment.NewLine);
+            if (invalid.Count > 0)
+                txt1MSG.AppendText("Некорректный ввод: " + string.Join(", ", invalid) + Environment.NewLine);
+
+            txt1MSG.SelectionStart = 0;
+            txt1MSG.ScrollToCaret();
+        }
+
+        private void btn1SORT_Click(object sender, EventArgs e)
+        {
+            numbers.Sort();
+            UpdateCollectionDisplay();
+            txt1MSG.Clear();
+            txt1MSG.AppendText("Коллекция отсортирована" + Environment.NewLine);
+
+            txt1MSG.SelectionStart = 0;
+            txt1MSG.ScrollToCaret();
+        }
+
+        private void btn1CLEAR_Click(object sender, EventArgs e)
+        {
+            numbers.Clear();
+            txt1COL.Clear();
+            txt1MSG.Clear();
+            txt1MSG.AppendText("Коллекция полностью очищена" + Environment.NewLine);
+
+            txt1MSG.SelectionStart = 0;
+            txt1MSG.ScrollToCaret();
+        }
+
+        private void btn21GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            string avia = txt21AVIA.Text.Trim();
+            string model = txt21MODEL.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(avia))
+            {
+                txt2MSG.Text = "Авиакомпания обязательна";
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                txt2MSG.Text = "Модель самолёта обязательна";
+                return;
+            }
+
+            if (!int.TryParse(txt21YEAR.Text.Trim(), out int year))
+            {
+                txt2MSG.Text = "Некорректный год выпуска";
+                return;
+            }
+            if (year < 1900 || year > DateTime.Now.Year)
+            {
+                txt2MSG.Text = $"Год выпуска должен быть от 1900 до {DateTime.Now.Year}";
+                return;
+            }
+
+            if (!int.TryParse(txt21SEATS.Text.Trim(), out int seats))
+            {
+                txt2MSG.Text = "Некорректное количество мест";
+                return;
+            }
+            if (seats < 1)
+            {
+                txt2MSG.Text = "Количество мест должно быть больше 0";
+                return;
+            }
+
+            planes_2.Add(new PassengerPlane(avia, model, year, seats));
+            txt2MSG.Text = $"Самолёт {model} добавлен";
+            UpdatePlanesCOL();
+        }
+
+        private void btn22GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            if (planes_2.Count == 0)
+            {
+                txt2MSG.Text = "Коллекция пуста, нечего удалять";
+                return;
+            }
+
+            string model = txt22MODEL.Text.Trim();
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                txt2MSG.Text = "Введите модель для удаления";
+                return;
+            }
+
+            int removedCount = planes_2.RemoveAll(p => p.Model.Equals(model, StringComparison.OrdinalIgnoreCase));
+            txt2MSG.Text = removedCount > 0
+                ? $"Удалено самолётов: {removedCount}"
+                : "Самолёты с такой моделью не найдены";
+
+            UpdatePlanesCOL();
+        }
+
+        private void btn23GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            if (planes_2.Count == 0)
+            {
+                txt2MSG.Text = "Коллекция пуста, нечего искать";
+                return;
+            }
+
+            string avia = txt23AVIA.Text.Trim();
+            if (string.IsNullOrWhiteSpace(avia))
+            {
+                txt2MSG.Text = "Введите авиакомпанию для поиска";
+                return;
+            }
+
+            var found = planes_2.Where(p => p.AirlineName.Equals(avia, StringComparison.OrdinalIgnoreCase)).ToList();
+            txt2MSG.Text = found.Count > 0
+                ? $"Найдено {found.Count} самолётов: " + string.Join(", ", found.Select(p => p.Model))
+                : "Самолёты не найдены";
+        }
+
+        private void btn2SORT_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            if (planes_2.Count == 0)
+            {
+                txt2MSG.Text = "Коллекция пуста, сортировка невозможна";
+                return;
+            }
+
+            planes_2.Sort((a, b) => a.Year.CompareTo(b.Year));
+            txt2MSG.Text = "Коллекция отсортирована по году выпуска";
+            UpdatePlanesCOL();
+        }
+
+        private void btn2CLEAN_Click(object sender, EventArgs e)
+        {
+            if (planes_2.Count == 0)
+            {
+                txt2MSG.Text = "Коллекция уже пуста";
+                return;
+            }
+
+            planes_2.Clear();
+            txt2COL.Clear();
+            txt2MSG.Text = "Коллекция очищена";
+        }
+
+        private void btn31GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            string avia = txt31AVIA.Text.Trim();
+            string model = txt31MODEL.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(avia) || string.IsNullOrWhiteSpace(model))
+            {
+                txt3MSG.Text = "Авиакомпания и модель обязательны";
+                return;
+            }
+
+            if (!int.TryParse(txt31YEAR.Text.Trim(), out int year) || year < 1900 || year > DateTime.Now.Year)
+            {
+                txt3MSG.Text = "Некорректный год";
+                return;
+            }
+
+            if (!int.TryParse(txt31SEATS.Text.Trim(), out int seats) || seats < 1)
+            {
+                txt3MSG.Text = "Некорректное количество мест";
+                return;
+            }
+
+            planes_3.Add(nextPlaneId++, new PassengerPlane(avia, model, year, seats));
+            txt3MSG.Text = $"Самолёт {model} добавлен";
+            UpdateSortedPlanesCOL();
+        }
+
+        private void btn32GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            if (!int.TryParse(txt32ID.Text.Trim(), out int id))
+            {
+                txt3MSG.Text = "Некорректный iD";
+                return;
+            }
+
+            if (planes_3.ContainsKey(id))
+            {
+                planes_3.Remove(id);
+                txt3MSG.Text = $"Самолёт с iD {id} удалён";
+            }
+            else
+            {
+                txt3MSG.Text = $"Самолёт с iD {id} не найден";
+            }
+
+            UpdateSortedPlanesCOL();
+        }
+
+        private void btn33GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            if (!int.TryParse(txt33ID.Text.Trim(), out int id))
+            {
+                txt3MSG.Text = "Некорректный iD";
+                return;
+            }
+
+            if (planes_3.ContainsKey(id))
+            {
+                PassengerPlane p = (PassengerPlane)planes_3[id];
+                txt3MSG.Text = $"Найден самолёт: {p.AirlineName}-{p.Model}-{p.Year}-{p.Seats}";
+            }
+            else
+            {
+                txt3MSG.Text = $"Самолёт с iD {id} не найден";
+            }
+        }
+
+        private void btn3CLEAN_Click(object sender, EventArgs e)
+        {
+            planes_3.Clear();
+            txt3COL.Clear();
+            txt3MSG.Text = "Коллекция очищена";
+        }
+    }
+
+    public class PassengerPlane
+    {
+        public string AirlineName { get; set; }
+        public string Model { get; set; }
+        public int Year { get; set; }
+        public int Seats { get; set; }
+
+        public PassengerPlane(string airline, string model, int year, int seats)
+        {
+            if (string.IsNullOrWhiteSpace(airline))
+                throw new ArgumentException("Авиакомпания не может быть пустой");
+            if (string.IsNullOrWhiteSpace(model))
+                throw new ArgumentException("Модель не может быть пустой");
+            if (year < 1900 || year > DateTime.Now.Year)
+                throw new ArgumentException("Некорректный год выпуска");
+            if (seats < 1)
+                throw new ArgumentException("Количество мест не может быть меньше 1");
+
+            AirlineName = airline;
+            Model = model;
+            Year = year;
+            Seats = seats;
+        }
+
+        public override string ToString()
+        {
+            return $"{AirlineName}-{Model}-{Year}-{Seats}";
+        }
+    }
+}
