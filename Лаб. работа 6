@@ -22,7 +22,7 @@ namespace NETFramework_cs_6
                     Console.WriteLine("\nВыберите действие (1-3) или 0 для выхода:");
                     Console.WriteLine("1. Задание 1 - Работа с коллекцией целых чисел (List<int>)");
                     Console.WriteLine("2. Задание 2 - Работа с коллекцией пассажирских самолётов (List<PassengerPlane>)");
-                    Console.WriteLine("3. Задание 3 - Работа с коллекцией пассажирских самолётов с ID ключом (SortedList)");
+                    Console.WriteLine("3. Задание 3 - Работа с коллекцией пассажирских самолётов с iD ключом (SortedList)");
                     Console.WriteLine("0. Выход");
                     Console.Write("Выберите действие: ");
 
@@ -194,7 +194,7 @@ namespace NETFramework_cs_6
                 {
                     if (numbers_1.Remove(num))
                         removedNumbers_1.Add(num);
-                else
+                    else
                         notFoundNumbers_1.Add(num);
                 }
                 else
@@ -292,23 +292,23 @@ namespace NETFramework_cs_6
 
                     switch (choice_2)
                     {
-                        case 1: 
+                        case 1:
                             AddPlane(planes_2);
                             break;
                         case 2:
                             DelPlane(planes_2);
                             break;
                         case 3:
-                            SearchPlane(planes_2); 
+                            SearchPlane(planes_2);
                             break;
-                        case 4: 
-                            SortPlanes(planes_2); 
+                        case 4:
+                            SortPlanes(planes_2);
                             break;
                         case 5:
-                            ShowPlanes(planes_2); 
+                            ShowPlanes(planes_2);
                             break;
                         case 0:
-                            Console.WriteLine("Возврат в главное меню ->"); 
+                            Console.WriteLine("Возврат в главное меню ->");
                             break;
                         default:
                             Console.WriteLine("Несуществующее действие");
@@ -440,16 +440,6 @@ namespace NETFramework_cs_6
             GORline(62);
         }
 
-        static void GORline(int f_size)
-        {
-            Console.Write("x");
-            for (int i = 0; i < f_size; i++)
-            {
-                Console.Write("-");
-            }
-            Console.Write("x\n");
-        }
-
         // Третье 
         static void Third()
         {
@@ -463,8 +453,8 @@ namespace NETFramework_cs_6
                 {
                     Console.WriteLine("\n=== Меню управления SortedList самолётов ===");
                     Console.WriteLine("1. Добавить самолёт");
-                    Console.WriteLine("2. Удалить самолёт по модели");
-                    Console.WriteLine("3. Найти самолёт по модели");
+                    Console.WriteLine("2. Удалить самолёт по iD");
+                    Console.WriteLine("3. Найти самолёт по iD");
                     Console.WriteLine("4. Вывести все самолёты");
                     Console.WriteLine("0. Назад в главное меню");
                     Console.Write("Выберите действие: ");
@@ -603,6 +593,15 @@ namespace NETFramework_cs_6
             }
 
             GORline(69);
+        }
+        static void GORline(int f_size)
+        {
+            Console.Write("x");
+            for (int i = 0; i < f_size; i++)
+            {
+                Console.Write("-");
+            }
+            Console.Write("x\n");
         }
     }
 
