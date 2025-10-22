@@ -68,7 +68,7 @@ namespace NETFramework_cs_6
                     Console.WriteLine("\n=== Меню управления коллекцией целых чисел ===");
                     Console.WriteLine("1. Добавить число(а)");
                     Console.WriteLine("2. Удалить число(а)");
-                    Console.WriteLine("3. Найти число");
+                    Console.WriteLine("3. Найти число(а)");
                     Console.WriteLine("4. Отсортировать коллекцию");
                     Console.WriteLine("5. Вывести коллекцию");
                     Console.WriteLine("0. Назад в главное меню");
@@ -229,21 +229,31 @@ namespace NETFramework_cs_6
 
         static void SearchNum(List<int> numbers_1)
         {
-            int num_1;
-        F3:
-            Console.Write("Введите число для поиска: ");
-            if (int.TryParse(Console.ReadLine(), out num_1))
+            Console.Write("Введите числа через пробел для поиска: ");
+            string input = Console.ReadLine();
+            string[] parts = input.Split(' ');
+            List<int> notFound = new List<int>();
+            List<int> found = new List<int>();
+
+            foreach (var part in parts)
             {
-                if (numbers_1.Contains(num_1))
-                    Console.WriteLine($"Число {num_1} найдено в коллекции");
+                if (int.TryParse(part, out int num))
+                {
+                    if (numbers_1.Contains(num))
+                        found.Add(num);
+                    else
+                        notFound.Add(num);
+                }
                 else
-                    Console.WriteLine("Число не найдено");
+                {
+                    Console.WriteLine($"Некорректный ввод: {part} - пропускаем");
+                }
             }
-            else
-            {
-                Console.WriteLine("Некорректный ввод, попробуйте снова");
-                goto F3;
-            }
+
+            if (found.Count > 0)
+                Console.WriteLine("Найдено: " + string.Join(", ", found));
+            if (notFound.Count > 0)
+                Console.WriteLine("Не найдено: " + string.Join(", ", notFound));
         }
 
         static void SortNum(List<int> numbers_1)
