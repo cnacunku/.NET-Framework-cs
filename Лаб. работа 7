@@ -61,7 +61,7 @@ namespace NETFramework_cs_7
         {
             int n;
         startFirst_1:
-            Console.Write("Введите длину n для одномерного массива: ");
+            Console.Write("Введите количество строк n для одномерного массива: ");
             if (!int.TryParse(Console.ReadLine(), out n) || n <= 0)
             {
                 Console.WriteLine("Ошибка. n должно быть целым числом и больше 0");
@@ -70,7 +70,7 @@ namespace NETFramework_cs_7
 
             int m;
         startFirst_2:
-            Console.Write("Введите длину m для двумерного массива: ");
+            Console.Write("Введите количество столбцов m для двумерного массива: ");
             if (!int.TryParse(Console.ReadLine(), out m) || m <= 0)
             {
                 Console.WriteLine("Ошибка. m должно быть целым числом и больше 0");
@@ -82,7 +82,7 @@ namespace NETFramework_cs_7
             int choiceR;
             while(true)
             {
-                Console.Write("(1) Ввести массив вручную; (2) Заполнить массив случайными числами: ");
+                Console.Write("(1) Ввести массив вручную; (2) Заполнить массив случайными числами (от -9 до 9): ");
                 if (int.TryParse(Console.ReadLine(), out choiceR) && (choiceR == 1 || choiceR == 2))
                 {
                     break;
@@ -95,7 +95,35 @@ namespace NETFramework_cs_7
 
             FillArray2D(A, "A", choiceR);
 
+            Console.WriteLine("\nМассив A:");
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < m; j++)
+                    Console.Write($"{A[i, j],3}");
+                Console.WriteLine();
+            }
 
+            double maxAbs = Math.Abs(A[0, 0]);
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                    if (Math.Abs(A[i, j]) > maxAbs)
+                        maxAbs = Math.Abs(A[i, j]);
+
+            int count = 0;
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    if (Math.Abs(A[i, j]) == maxAbs)
+                    {
+                        count++;
+                        break; 
+                    }
+                }
+            }
+
+            Console.WriteLine($"\nМаксимальный по модулю элемент: {maxAbs}");
+            Console.WriteLine($"Количество строк, содержащих максимальный по модулю элемент массива: {count}");
 
         }
         static void First_2()
