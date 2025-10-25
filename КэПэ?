@@ -1,0 +1,133 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace RobertsFloresManualInput
+{
+    class Graph
+    {
+        public int N { get; }
+        public List<int>[] M; // Матрица M: M[j] — список вершин, смежных с x_j (т.е. столбец j)
+
+        public Graph(int n)
+        {
+            N = n;
+            M = new List<int>[n];
+            for (int i = 0; i < n; i++)
+                M[i] = new List<int>();
+        }
+
+        public void InputMatrix()
+        {
+            Console.WriteLine("Введите матрицу M (списки смежных вершин для каждого столбца).");
+            Console.WriteLine("Вершины нумеруются с 1 до N. Пример ввода: 2 3 4 (или пусто, если нет соседей).");
+            for (int j = 0; j < N; j++)
+            {
+                Console.Write($"Столбец {j + 1} (смежные вершины x_k для x_{j + 1}): ");
+                string line = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var nums = line.Split(new[] { ' ', ',', ';', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(s => int.Parse(s) - 1) // храним в 0-based
+                               .ToList();
+                M[j].AddRange(nums);
+            }
+        }
+
+        public void FindHamiltonianChainsAndCycles(int startVertex)
+        {
+            var S = new List<int>(); // множество S
+            bool[] visited = new bool[N];
+            List<List<int>> foundChains = new List<List<int>>();
+            List<List<int>> foundCycles = new List<List<int>>();
+
+            void Backtrack(int p)
+            {
+                // Шаг 3: если есть возможные вершины
+                foreach (int xk in M[p])
+                {
+                    if (!visited[xk])
+                    {
+                        // Шаг 4
+                        visited[xk] = true;
+                        S.Add(xk);
+
+                        if (S.Count == N)
+                        {
+                            // Шаг 5: найдена гамильтонова цепь
+                            foundChains.Add(new List<int>(S));
+
+                            // Шаг 6: проверяем, есть ли ребро (p, x1)
+                            if (M[xk].Contains(startVertex))
+                            {
+                                foundCycles.Add(new List<int>(S));
+                            }
+                        }
+                        else
+                        {
+                            Backtrack(xk);
+                        }
+
+                        // Шаг 7: возврат
+                        visited[xk] = false;
+                        S.RemoveAt(S.Count - 1);
+                    }
+                }
+            }
+
+            visited[startVertex] = true;
+            S.Add(startVertex);
+            Backtrack(startVertex);
+
+            Console.WriteLine("\n==== РЕЗУЛЬТАТ ====");
+            if (foundChains.Count == 0)
+            {
+                Console.WriteLine("Гамильтоновых цепей не найдено.");
+            }
+            else
+            {
+                Console.WriteLine($"Найдено гамильтоновых цепей: {foundChains.Count}");
+                int i = 1;
+                foreach (var path in foundChains)
+                    Console.WriteLine($"{i++}) {FormatPath(path)}");
+            }
+
+            if (foundCycles.Count == 0)
+            {
+                Console.WriteLine("Гамильтоновых циклов не найдено.");
+            }
+            else
+            {
+                Console.WriteLine($"\nНайдено гамильтоновых циклов: {foundCycles.Count}");
+                int i = 1;
+                foreach (var cyc in foundCycles)
+                    Console.WriteLine($"{i++}) {FormatPath(cyc)} (замыкается в x{startVertex + 1})");
+            }
+        }
+
+        static string FormatPath(List<int> path)
+        {
+            return string.Join(" -> ", path.Select(x => $"x{x + 1}"));
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.Write("Введите количество вершин графа (n): ");
+            int n = int.Parse(Console.ReadLine());
+
+            var g = new Graph(n);
+            g.InputMatrix();
+
+            Console.Write("\nВведите начальную вершину (номер от 1 до n): ");
+            int start = int.Parse(Console.ReadLine()) - 1;
+
+            g.FindHamiltonianChainsAndCycles(start);
+
+            Console.WriteLine("\nРабота завершена. Нажмите Enter...");
+            Console.ReadLine();
+        }
+    }
+}
