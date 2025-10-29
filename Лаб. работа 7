@@ -186,7 +186,7 @@ namespace NETFramework_cs_7
         {
             int k;
         startFirst_11:
-            Console.Write("Введите количество строк k для одномерного массива: ");
+            Console.Write("Введите количество элементов k для одномерного массива: ");
             if (!int.TryParse(Console.ReadLine(), out k) || k <= 0)
             {
                 Console.WriteLine("Ошибка. k должно быть целым числом и больше 0");
@@ -394,7 +394,7 @@ namespace NETFramework_cs_7
             else
             {
                 for (int i = 0; i < arr.Length; i++)
-                    arr[i] = rnd.Next(-9, 9);
+                    arr[i] = rnd.Next(-9, 10);
                 Console.WriteLine($"Массив {name} заполнен случайными числами(От -9 до 9)");
             }
         }
@@ -423,7 +423,7 @@ namespace NETFramework_cs_7
                 {
                     for (int j = 0; j < arr.GetLength(1); j++)
                     {
-                        arr[i, j] = rnd.Next(-9, 9);
+                        arr[i, j] = rnd.Next(-9, 10);
                     }
                 }
                 Console.WriteLine($"Массив {name} заполнен случайными числами(От -9 до 9)");
