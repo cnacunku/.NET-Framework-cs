@@ -1,0 +1,370 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_7_WF
+{
+    public partial class NETFramework_cs_7_WF : Form
+    {
+        public NETFramework_cs_7_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void btn11GO_Click(object sender, EventArgs e)
+        {
+            txt11MSG.Clear();
+
+            if (!int.TryParse(txt11n.Text, out int n) || n <= 0)
+            {
+                txt11MSG.Text = "Ошибка: некорректное значение n";
+                return;
+            }
+            if (!int.TryParse(txt11m.Text, out int m) || m <= 0)
+            {
+                txt11MSG.Text = "Ошибка: некорректное значение m";
+                return;
+            }
+
+            double[,] A = new double[n, m];
+
+            if (rbtn11VRUCH.Checked)
+            {
+                string[] rows = txt11Array.Lines
+                    .Where(line => !string.IsNullOrWhiteSpace(line))
+                    .ToArray();
+
+                if (rows.Length != n)
+                {
+                    txt11MSG.Text = $"Ошибка: количество строк ({rows.Length}) не совпадает с n = {n}";
+                    return;
+                }
+
+                for (int i = 0; i < n; i++)
+                {
+                    string[] parts = rows[i]
+                        .Split(' ', '\t')
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
+
+                    if (parts.Length != m)
+                    {
+                        txt11MSG.Text = $"Ошибка: в строке {i + 1} должно быть {m} элементов";
+                        return;
+                    }
+
+                    for (int j = 0; j < m; j++)
+                    {
+                        if (!double.TryParse(parts[j], out A[i, j]))
+                        {
+                            txt11MSG.Text = $"Ошибка: элемент [{i + 1},{j + 1}] не является числом";
+                            return;
+                        }
+                    }
+                }
+            }
+            else if (rbtn11SLUCH.Checked)
+            {
+                Random rnd = new Random();
+                txt11Array.Clear();
+                for (int i = 0; i < n; i++)
+                {
+                    for (int j = 0; j < m; j++)
+                    {
+                        A[i, j] = rnd.Next(-9, 10);
+                        txt11Array.AppendText($"{A[i, j],4}");
+                    }
+                    txt11Array.AppendText(Environment.NewLine);
+                }
+            }
+
+            double maxAbs = 0;
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                    if (Math.Abs(A[i, j]) > maxAbs)
+                        maxAbs = Math.Abs(A[i, j]);
+
+            int countRows = 0;
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                    if (Math.Abs(A[i, j]) == maxAbs)
+                    {
+                        countRows++;
+                        break;
+                    }
+
+            txt11MSG.Text = $"Максимальные по модулю элементы: {maxAbs}, {(-1) * maxAbs}\r\n" +
+                            $"Количество строк с ним(и): {countRows}";
+        }
+
+        private void btn11CLEAR_Click(object sender, EventArgs e)
+        {
+            txt11n.Clear();
+            txt11m.Clear();
+
+            txt11Array.Clear();
+
+            txt11MSG.Clear();
+
+            rbtn11SLUCH.Checked = true;
+
+            txt11n.Focus();
+        }
+
+        private void btn12GO_Click(object sender, EventArgs e)
+        {
+            txt12MSG.Clear();
+
+            if (!double.TryParse(txt12x.Text, out double x) || Math.Abs(x) < 1e-9)
+            {
+               txt12MSG.Text = "Ошибка: x должен быть числом и не равен 0\r\n(Знаменатель в фурмулах a, b не может быть равным 0)";
+                return;
+            }
+            if (!double.TryParse(txt12y.Text, out double y))
+            {
+                txt12MSG.Text = "Ошибка: y должен быть числом";
+                return;
+            }
+            if (!double.TryParse(txt12z.Text, out double z))
+            {
+                txt12MSG.Text = "Ошибка: z должен быть числом";
+                return;
+            }
+
+            double denom = z + Math.Pow(x, 2) / 4;
+            if (Math.Abs(denom) < 1e-9)
+            {
+                txt12MSG.Text = "Ошибка: знаменатель в выражении a равен 0";
+                return;
+            }
+
+            double insideLog = Math.Abs((y - Math.Sqrt(Math.Abs(x))) * (x - y / denom));
+            if (insideLog <= 0)
+            {
+                txt12MSG.Text = "Ошибка: подлогарифмическое выражение <= 0";
+                return;
+            }
+
+            double a = Math.Log(insideLog);
+            double b = x - Math.Pow(x, 2) / 3 + (x + y) / x;
+
+            txt12MSG.Text = $"a = {a:F4}\r\nb = {b:F4}";
+        }
+
+        private void btn13CLEAR_Click(object sender, EventArgs e)
+        {
+            txt13k.Clear();
+
+            txt13Array.Clear();
+
+            txt13MSG.Clear();
+
+            rbtn13SLUCH.Checked = true;
+
+            txt13k.Focus();
+        }
+
+        private void btn13GO_Click(object sender, EventArgs e)
+        {
+            txt13MSG.Clear();
+
+            double[] B;
+            Random rnd = new Random();
+
+            if (rbtn13VRUCH.Checked)
+            {
+                string input = txt13Array.Text.Trim();
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    txt13MSG.Text = "Ошибка: массив не введён";
+                    return;
+                }
+
+                string[] parts = input.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                B = new double[parts.Length];
+
+                List<string> invalidElements = new List<string>();
+
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (!double.TryParse(parts[i], out B[i]))
+                    {
+                        invalidElements.Add(parts[i]);
+                        B[i] = double.NaN;
+                    }
+                }
+
+                if (invalidElements.Count > 0)
+                {
+                    txt13MSG.AppendText("Пропущены некорректные элементы: " + string.Join(", ", invalidElements) + "\r\n\r\n");
+                }
+            }
+            else
+            {
+                if (!int.TryParse(txt13k.Text, out int size) || size <= 0)
+                {
+                    txt13MSG.Text = "Ошибка: введите целое число больше 0 для размера массива";
+                    return;
+                }
+
+                B = new double[size];
+                txt13Array.Clear();
+
+                for (int i = 0; i < size; i++)
+                {
+                    B[i] = rnd.Next(-9, 10);
+                    txt13Array.AppendText($"{B[i]} ");
+                }
+            }
+
+            int zeroCount = B.Count(x => Math.Abs(x) < 1e-9);
+
+            txt13MSG.AppendText($"Количество нулей: {zeroCount}");
+        }
+
+        private void btn2GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            if (!double.TryParse(txt2a.Text.Trim(), out double a))
+            {
+                txt2MSG.Text = "Ошибка: a должно быть числом";
+                return;
+            }
+
+            if (!double.TryParse(txt2b.Text.Trim(), out double b))
+            {
+                txt2MSG.Text = "Ошибка: b должно быть числом";
+                return;
+            }
+
+            CalcU(in a, in b, out double u);
+            CalcV(in a, in b, out double v);
+            CalcK(ref u, ref v, out double k);
+
+            txt2MSG.AppendText($"u = {u:F3}\r\n");
+            txt2MSG.AppendText($"v = {v:F3}\r\n");
+            txt2MSG.AppendText($"k = {k:F3}");
+        }
+
+        private void CalcU(in double a, in double b, out double u)
+        {
+            u = Math.Max(a, b - a);
+        }
+
+        private void CalcV(in double a, in double b, out double v)
+        {
+            v = Math.Min(a * b, a + b);
+        }
+
+        private void CalcK(ref double u, ref double v, out double k)
+        {
+            k = Math.Min(u + v * 2, 3.14);
+        }
+
+        private void btn3GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            if (!int.TryParse(txt3Number.Text.Trim(), out int number) || number < 1000 || number > 9999)
+            {
+                txt3MSG.Text = "Ошибка: введите целое четырёхзначное число";
+                return;
+            }
+
+            FindMaxOddDigit(in number, out int maxOdd);
+
+            if (maxOdd == -1)
+                txt3MSG.Text = "Нечётные цифры не найдены";
+            else
+                txt3MSG.Text = $"Максимальная нечётная цифра: {maxOdd}";
+        }
+
+        private void FindMaxOddDigit(in int number, out int maxOdd)
+        {
+            maxOdd = -1;
+            int temp = number;
+
+            while (temp > 0)
+            {
+                int digit = temp % 10;
+                if (digit % 2 != 0 && digit > maxOdd)
+                {
+                    maxOdd = digit;
+                }
+                temp /= 10;
+            }
+        }
+
+        private void btn4GO_Click(object sender, EventArgs e)
+        {
+            txt4MSG.Clear();
+
+            ReadPoint("A", 0, 0, txt4A.Text.Trim(), out double x1, out double y1);
+            ReadPoint("B", 2, 0, txt4B.Text.Trim(), out double x2, out double y2);
+            ReadPoint("C", 1, 2, txt4C.Text.Trim(), out double x3, out double y3);
+
+            RAST(in x1, in y1, in x2, in y2, out double AB);
+            RAST(in x2, in y2, in x3, in y3, out double BC);
+            RAST(in x1, in y1, in x3, in y3, out double AC);
+
+            double perimetr = PERIMETR(x1, y1, x2, y2, x3, y3);
+            double p = perimetr / 2;
+            double S = Math.Sqrt(p * (p - AB) * (p - BC) * (p - AC));
+
+            txt4MSG.AppendText($"Длина сторон:\r\nAB = {AB:F3}, BC = {BC:F3}, AC = {AC:F3}\r\n");
+            txt4MSG.AppendText($"Периметр: {perimetr:F3}\r\n");
+            txt4MSG.AppendText($"Площадь: {S:F3}");
+        }
+        private void ReadPoint(string pointName, double defaultX, double defaultY, string input, out double x, out double y)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                x = defaultX;
+                y = defaultY;
+                return;
+            }
+
+            var parts = input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length != 2)
+            {
+                MessageBox.Show($"Ошибка. Введите ДВА числа для точки {pointName}", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                x = defaultX;
+                y = defaultY;
+                return;
+            }
+
+            if (!double.TryParse(parts[0], out x) || !double.TryParse(parts[1], out y))
+            {
+                MessageBox.Show($"Ошибка. Координаты точки {pointName} должны быть числами", "Ошибка ввода", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                x = defaultX;
+                y = defaultY;
+            }
+        }
+        static void RAST(in double x1, in double y1, in double x2, in double y2, out double dist)
+        {
+            dist = Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+        }
+
+        static double PERIMETR(
+            double x1 = 0, double y1 = 0,
+            double x2 = 2, double y2 = 0,
+            double x3 = 1, double y3 = 2)
+        {
+            double AB, BC, AC;
+
+            RAST(in x1, in y1, in x2, in y2, out AB);
+            RAST(in x2, in y2, in x3, in y3, out BC);
+            RAST(in x1, in y1, in x3, in y3, out AC);
+
+            return AB + BC + AC;
+        }
+    }
+}
