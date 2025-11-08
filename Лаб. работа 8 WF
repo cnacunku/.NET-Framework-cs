@@ -1,0 +1,316 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_8_WF
+{
+    public partial class NETFramework_cs_8_WF : Form
+    {
+        public NETFramework_cs_8_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void btn1GO_Click(object sender, EventArgs e)
+        {
+            txt1MSG.Clear();
+
+            try
+            {
+                int[] numbers;
+
+                if (rbtn1Manual.Checked)
+                {
+                    string input = txt1Input.Text.Trim();
+
+                    if (string.IsNullOrWhiteSpace(input))
+                    {
+                        txt1MSG.Text = "Ошибка: не введено ни одного числа.";
+                        return;
+                    }
+
+                    var list = new List<int>();
+                    string[] parts = input.Split(new char[] { ' ', '\t', ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string part in parts)
+                    {
+                        if (int.TryParse(part, out int num))
+                            list.Add(num);
+                        else
+                            txt1MSG.AppendText($"Пропущено некорректное значение: {part}\r\n");
+                    }
+
+                    if (list.Count == 0)
+                    {
+                        txt1MSG.AppendText("Ошибка: нет корректных целых чисел для записи.");
+                        return;
+                    }
+
+                    numbers = list.ToArray();
+                    txt1MSG.AppendText($"Введено чисел: {numbers.Length}\r\n");
+                }
+                else if (rbtn1Random.Checked)
+                {
+                    int count = (int)num1Count.Value;
+                    if (count <= 0)
+                    {
+                        txt1MSG.Text = "Ошибка: количество чисел должно быть > 0.";
+                        return;
+                    }
+
+                    numbers = new int[count];
+                    Random rnd = new Random();
+                    for (int i = 0; i < count; i++)
+                        numbers[i] = rnd.Next(-99, 100);
+
+                    txt1MSG.AppendText($"Сгенерировано случайных чисел: {count}\r\n");
+                }
+                else
+                {
+                    txt1MSG.Text = "Ошибка: выберите режим ввода чисел.";
+                    return;
+                }
+
+                string projectRoot = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+                string innerFolder = Path.Combine(projectRoot, "NETFramework_cs_8_WF");
+                if (!Directory.Exists(innerFolder))
+                    Directory.CreateDirectory(innerFolder);
+
+                string path = Path.Combine(innerFolder, "numbers.txt");
+
+                File.WriteAllText(path, string.Join(" ", numbers));
+                txt1MSG.AppendText($"Файл создан: {path}\r\n");
+                txt1MSG.AppendText("Сохранённые числа:\r\n");
+                txt1MSG.AppendText(string.Join(" ", numbers) + "\r\n");
+
+                int evenCount = numbers.Count(n => n % 2 == 0);
+                txt1MSG.AppendText($"Количество чётных чисел: {evenCount}");
+            }
+            catch (Exception ex)
+            {
+                txt1MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn2GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            try
+            {
+                string folderPath = "", projectRoot = "";
+
+                string assemblyLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string binDir = Path.GetDirectoryName(assemblyLocation);
+                string debugDir = Path.GetDirectoryName(binDir);
+                projectRoot = Path.GetDirectoryName(debugDir);
+
+                if (rbtn2ByName.Checked)
+                {
+                    string folderName = txt2Folder.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(folderName))
+                    {
+                        txt2MSG.Text = "Ошибка: введите имя папки.";
+                        return;
+                    }
+                    string innerFolder = projectRoot;
+                    folderPath = Path.Combine(innerFolder, folderName);
+                }
+                else if (rbtn2ByPath.Checked)
+                {
+                    string inputPath = txt2Folder.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(inputPath))
+                    {
+                        txt2MSG.Text = "Ошибка: введите полный путь к папке.";
+                        return;
+                    }
+                    if (!Path.IsPathRooted(inputPath))
+                    {
+                        inputPath = Path.Combine(projectRoot, inputPath);
+                    }
+                    folderPath = inputPath;
+                }
+                else
+                {
+                    txt2MSG.Text = "Ошибка: выберите режим создания папки.";
+                    return;
+                }
+
+                txt2MSG.AppendText($"Полный путь к папке: {folderPath}\r\n");
+
+                if (Directory.Exists(folderPath))
+                {
+                    txt2MSG.AppendText($"Папка уже существует");
+                }
+                else
+                {
+                    Directory.CreateDirectory(folderPath);
+                    txt2MSG.AppendText($"Папка успешно создана");
+                }
+            }
+            catch (Exception ex)
+            {
+                txt2MSG.Text = $"Ошибка при создании папки: {ex.Message}";
+            }
+        }
+
+        private void btn3GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            string fileName = txt3FileName.Text.Trim();
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                txt3MSG.Text = "Ошибка: введите имя файла (например, test.txt)";
+                return;
+            }
+
+            try
+            {
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string innerFolder = Path.Combine(projectRoot, "NETFramework_cs_8_WF");
+                if (!Directory.Exists(innerFolder))
+                    Directory.CreateDirectory(innerFolder);
+
+                string filePath = Path.Combine(innerFolder, fileName);
+
+                string method = cmb3Method.SelectedItem?.ToString();
+                if (string.IsNullOrWhiteSpace(method))
+                {
+                    txt3MSG.Text = "Ошибка: выберите метод создания файла из списка";
+                    return;
+                }
+
+                switch (method)
+                {
+                    case "File.Create()":
+                        using (File.Create(filePath)) { }
+                        txt3MSG.Text = $"Файл создан методом File.Create()\r\nПолный путь: {filePath}";
+                        break;
+
+                    case "File.WriteAllText()":
+                        File.WriteAllText(filePath, $"Текст записан методом File.WriteAllText()\r\nДата создания: {DateTime.Now}");
+                        txt3MSG.Text = $"Файл создан методом WriteAllText и заполнен\r\nПолный путь: {filePath}";
+                        break;
+
+                    case "File.AppendAllText()":
+                        File.AppendAllText(filePath, $"Текст дописан методом AppendAllText\r\nДата: {DateTime.Now}\r\n");
+                        txt3MSG.Text = $"Файл создан/дополнен методом AppendAllText\r\nПолный путь: {filePath}";
+                        break;
+
+                    case "FileStream":
+                        using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                        {
+                            byte[] data = Encoding.UTF8.GetBytes($"Текст записан через FileStream\r\nДата: {DateTime.Now}");
+                            fs.Write(data, 0, data.Length);
+                        }
+                        txt3MSG.Text = $"Файл создан методом FileStream\r\nПолный путь: {filePath}";
+                        break;
+
+                    case "StreamWriter":
+                        using (StreamWriter writer = new StreamWriter(filePath))
+                        {
+                            writer.WriteLine("Текст записан через StreamWriter");
+                            writer.WriteLine($"Дата создания: {DateTime.Now}");
+                        }
+                        txt3MSG.Text = $"Файл создан методом StreamWriter\r\nПолный путь: {filePath}";
+                        break;
+
+                    default:
+                        txt3MSG.Text = "Ошибка: неизвестный метод создания файла";
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                txt3MSG.Text = $"Ошибка при создании файла: {ex.Message}";
+            }
+        }
+
+        private void btn4GO_Click(object sender, EventArgs e)
+        {
+            txt4MSG.Clear();
+
+            string fileName = txt4FileName.Text.Trim();
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                txt4MSG.Text = "Ошибка: введите имя файла для чтения (например, test.txt)";
+                return;
+            }
+
+            try
+            {
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string innerFolder = Path.Combine(projectRoot, "NETFramework_cs_8_WF");
+                if (!Directory.Exists(innerFolder))
+                {
+                    txt4MSG.Text = $"Ошибка: папка проекта не найдена: {innerFolder}";
+                    return;
+                }
+
+                string filePath = Path.Combine(innerFolder, fileName);
+
+                if (!File.Exists(filePath))
+                {
+                    txt4MSG.Text = $"Ошибка: файл не найден: {filePath}";
+                    return;
+                }
+
+                string method = cmb4Method.SelectedItem?.ToString();
+                if (string.IsNullOrWhiteSpace(method))
+                {
+                    txt4MSG.Text = "Ошибка: выберите метод чтения файла из списка";
+                    return;
+                }
+
+                txt4MSG.AppendText($"Содержимое файла ({filePath}):\r\n\r\n");
+
+                switch (method)
+                {
+                    case "File.ReadAllText()":
+                        string text = File.ReadAllText(filePath);
+                        txt4MSG.AppendText(text);
+                        break;
+
+                    case "File.ReadAllLines()":
+                        string[] lines = File.ReadAllLines(filePath);
+                        foreach (string line in lines)
+                            txt4MSG.AppendText(line + Environment.NewLine);
+                        break;
+
+                    case "FileStream + StreamReader":
+                        using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                        using (StreamReader reader = new StreamReader(fs, Encoding.UTF8))
+                        {
+                            txt4MSG.AppendText(reader.ReadToEnd());
+                        }
+                        break;
+
+                    case "StreamReader напрямую":
+                        using (StreamReader reader = new StreamReader(filePath, Encoding.UTF8))
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
+                                txt4MSG.AppendText(line + Environment.NewLine);
+                        }
+                        break;
+
+                    default:
+                        txt4MSG.AppendText("Ошибка: неизвестный метод чтения файла");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                txt4MSG.Text = $"Ошибка при чтении файла: {ex.Message}";
+            }
+        }
+    }
+}
