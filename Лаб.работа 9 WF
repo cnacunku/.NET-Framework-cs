@@ -1,0 +1,257 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_9_WF
+{
+    public partial class NETFramework_cs_9_WF : Form
+    {
+        public NETFramework_cs_9_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void btn1GO_Click(object sender, EventArgs e)
+        {
+            txt1MSG.Clear();
+
+            string path = Path.Combine(Environment.CurrentDirectory, "numbers.dat");
+            int[] numbers;
+
+            try
+            {
+                if (rbtn1Manual.Checked)
+                {
+                    string input = txt1Input.Text.Trim();
+                    if (string.IsNullOrWhiteSpace(input))
+                    {
+                        txt1MSG.Text = "Ошибка: не введено ни одного числа.";
+                        return;
+                    }
+
+                    var list = new List<int>();
+                    string[] parts = input.Split(new char[] { ' ', '\t', ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string part in parts)
+                    {
+                        if (int.TryParse(part, out int num))
+                            list.Add(num);
+                        else
+                            txt1MSG.AppendText($"Пропущено некорректное значение: {part}\r\n");
+                    }
+
+                    if (list.Count == 0)
+                    {
+                        txt1MSG.AppendText("Ошибка: нет корректных целых чисел для записи.");
+                        return;
+                    }
+
+                    numbers = list.ToArray();
+                }
+                else if (rbtn1Random.Checked)
+                {
+                    int count = (int)num1Count.Value;
+                    if (count <= 0)
+                    {
+                        txt1MSG.Text = "Ошибка: количество чисел должно быть > 0.";
+                        return;
+                    }
+
+                    numbers = new int[count];
+                    Random rnd = new Random();
+                    for (int i = 0; i < count; i++)
+                        numbers[i] = rnd.Next(-99, 100);
+
+                    txt1MSG.AppendText($"Сгенерировано случайных чисел: {count}\r\n");
+                }
+                else
+                {
+                    txt1MSG.Text = "Ошибка: выберите режим ввода чисел.";
+                    return;
+                }
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
+                {
+                    foreach (int num in numbers)
+                        writer.Write(num);
+                }
+
+                txt1MSG.AppendText($"\nФайл успешно создан: {path}\r\n");
+
+                int evenCount = 0;
+                using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))
+                {
+                    txt1MSG.AppendText("Считанные числа из файла:\r\n");
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        int number = reader.ReadInt32();
+                        txt1MSG.AppendText(number + " ");
+                        if (number % 2 == 0)
+                            evenCount++;
+                    }
+                }
+
+                txt1MSG.AppendText($"\r\nКоличество чётных чисел в файле: {evenCount}");
+            }
+            catch (Exception ex)
+            {
+                txt1MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn2GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+
+            string path = Path.Combine(Environment.CurrentDirectory, "numbers.dat");
+
+            if (!File.Exists(path))
+            {
+                txt2MSG.Text = "Файл не найден! Сначала выполните Задание 1.";
+                return;
+            }
+
+            try
+            {
+                List<int> numbers = new List<int>();
+                using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))
+                {
+                    while (reader.BaseStream.Position < reader.BaseStream.Length)
+                    {
+                        numbers.Add(reader.ReadInt32());
+                    }
+                }
+
+                txt2MSG.AppendText("Текущие числа в файле:\r\n");
+                txt2MSG.AppendText(string.Join(", ", numbers) + "\r\n");
+
+                if (!int.TryParse(txt2Value.Text.Trim(), out int newValue))
+                {
+                    txt2MSG.AppendText("Ошибка: введите корректное целое число для вставки.");
+                    return;
+                }
+
+                Random rnd = new Random();
+                int position = rnd.Next(0, numbers.Count + 1);
+                txt2MSG.AppendText($"Случайно выбрана позиция: {position}\r\n");
+
+                numbers.Insert(position, newValue);
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(path, FileMode.Create)))
+                {
+                    foreach (int num in numbers)
+                        writer.Write(num);
+                }
+
+                txt2MSG.AppendText("Число успешно вставлено.\r\n");
+                txt2MSG.AppendText("Обновлённые числа в файле:\r\n");
+                txt2MSG.AppendText(string.Join(", ", numbers));
+            }
+            catch (Exception ex)
+            {
+                txt2MSG.Text = "Ошибка: " + ex.Message;
+            }
+        }
+
+        private void btn3GO_Click(object sender, EventArgs e)
+        {
+            txt3MSG.Clear();
+
+            string sourceInput = txt3Source.Text.Trim();
+            string destInput = txt3Dest.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(sourceInput) || string.IsNullOrWhiteSpace(destInput))
+            {
+                txt3MSG.Text = "Ошибка: укажите исходный и целевой файлы.";
+                return;
+            }
+
+            string sourcePath = Path.IsPathRooted(sourceInput) ? sourceInput : Path.Combine(Environment.CurrentDirectory, sourceInput);
+            string destPath = Path.IsPathRooted(destInput) ? destInput : Path.Combine(Environment.CurrentDirectory, destInput);
+
+            if (!File.Exists(sourcePath))
+            {
+                txt3MSG.Text = "Исходный файл не найден: " + sourcePath;
+                return;
+            }
+
+            try
+            {
+                if (File.Exists(destPath))
+                {
+                    var result = MessageBox.Show("Целевой файл уже существует. Перезаписать?",
+                                                 "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result != DialogResult.Yes)
+                    {
+                        txt3MSG.Text = "Копирование отменено пользователем.";
+                        return;
+                    }
+                }
+
+                File.Copy(sourcePath, destPath, true);
+                txt3MSG.Text = $"Файл успешно скопирован!\r\nПуть к целевому файлу: {destPath}";
+                txt3MSG.SelectionStart = 0;
+                txt3MSG.SelectionLength = 0;
+                txt3MSG.ScrollToCaret();
+            }
+            catch (Exception ex)
+            {
+                txt3MSG.Text = "Ошибка при копировании: " + ex.Message;
+            }
+        }
+
+        private void btn4GO_Click(object sender, EventArgs e)
+        {
+            txt4MSG.Clear();
+
+            string input = txt4FileName.Text.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                txt4MSG.Text = "Ошибка: укажите имя файла для получения информации.";
+                return;
+            }
+
+            string filePath = Path.IsPathRooted(input) ? input : Path.Combine(Environment.CurrentDirectory, input);
+
+            if (!File.Exists(filePath))
+            {
+                txt4MSG.Text = "Файл не найден: " + filePath;
+                return;
+            }
+
+            try
+            {
+                DateTime creationTime = File.GetCreationTime(filePath);
+                DateTime lastAccessTime = File.GetLastAccessTime(filePath);
+                DateTime lastWriteTime = File.GetLastWriteTime(filePath);
+
+                string info = $"Информация о файле: {filePath}\r\n" +
+                              $"Время создания: {creationTime}\r\n" +
+                              $"Время последнего доступа: {lastAccessTime}\r\n" +
+                              $"Время последней записи: {lastWriteTime}\r\n";
+
+                txt4MSG.Text = info;
+
+                string infoFilePath = Path.Combine(Environment.CurrentDirectory, "file_info.txt");
+                File.WriteAllText(infoFilePath, info);
+
+                txt4MSG.AppendText($"\r\nИнформация также сохранена в файл: {infoFilePath}");
+                txt4MSG.SelectionStart = 0;
+                txt4MSG.SelectionLength = 0;
+                txt4MSG.ScrollToCaret();
+            }
+            catch (Exception ex)
+            {
+                txt4MSG.Text = "Ошибка при получении информации: " + ex.Message;
+            }
+        }
+
+    }
+}
