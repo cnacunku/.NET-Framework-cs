@@ -1,0 +1,598 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_10_WF
+{
+    public partial class NETFramework_cs_10_WF : Form
+    {
+        public NETFramework_cs_10_WF()
+        {
+            InitializeComponent();
+        }
+        private class Employee
+        {
+            private string _fio;
+            public string FIO
+            {
+                get => _fio;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("ФИО не может быть пустым.");
+                    _fio = value.Trim();
+                }
+            }
+
+            private string _faculty;
+            public string Faculty
+            {
+                get => _faculty;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Выберите факультет.");
+                    _faculty = value;
+                }
+            }
+
+            private string _position;
+            public string Position
+            {
+                get => _position;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Выберите должность.");
+                    _position = value;
+                }
+            }
+
+            private string _gender;
+            public string Gender
+            {
+                get => _gender;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Выберите пол.");
+                    _gender = value;
+                }
+            }
+
+            private DateTime _birthDate;
+            public DateTime BirthDate
+            {
+                get => _birthDate;
+                set
+                {
+                    DateTime minDate = new DateTime(1908, 6, 8);
+                    DateTime maxDate = DateTime.Today;
+
+                    if (value < minDate)
+                        throw new Exception($"Дата рождения не может быть раньше {minDate:dd.MM.yyyy}.");
+                    if (value > maxDate)
+                        throw new Exception("Дата рождения не может быть из будущего.");
+
+                    _birthDate = value;
+                }
+            }
+
+            private string _email;
+            public string Email
+            {
+                get => _email;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Email не может быть пустым.");
+                    if (!value.All(ch =>
+                        (ch >= 'a' && ch <= 'z') ||
+                        (ch >= 'A' && ch <= 'Z') ||
+                        char.IsDigit(ch) ||
+                        ch == '@' || ch == '.' || ch == '-' || ch == '_'))
+                        throw new Exception("Email должен содержать только латинские буквы, цифры и символы . _ - @");
+
+                    var parts = value.Split('@');
+                    if (parts.Length != 2)
+                        throw new Exception("Email должен содержать один символ '@'");
+                    if (string.IsNullOrWhiteSpace(parts[0]))
+                        throw new Exception("Email должен быть в формате имя@домен.зона");
+                    if (!parts[1].Contains("."))
+                        throw new Exception("После '@' должны быть домен и доменная зона");
+
+                    _email = value.Trim();
+                }
+            }
+
+            private string _phone;
+            public string Phone
+            {
+                get => _phone;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Телефон не может быть пустым.");
+
+                    string phone = value.Trim();
+                    if (phone.StartsWith("+"))
+                    {
+                        if (phone.Length < 2 || !phone.Substring(1).All(char.IsDigit))
+                            throw new Exception("Телефон может содержать только цифры (или '+' в начале).");
+                    }
+                    else
+                    {
+                        if (!phone.All(char.IsDigit))
+                            throw new Exception("Телефон может содержать только цифры (или '+' в начале).");
+                    }
+
+                    if (phone.Replace("+", "").Length < 10)
+                        throw new Exception("Телефон должен содержать минимум 10 цифр.");
+
+                    _phone = phone;
+                }
+            }
+
+            private string _login;
+            public string Login
+            {
+                get => _login;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Логин не может быть пустым.");
+                    _login = value.Trim();
+                }
+            }
+
+            private string _password;
+            public string Password
+            {
+                get => _password;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Пароль не может быть пустым.");
+                    if (value.Length < 8)
+                        throw new Exception("Пароль должен содержать минимум 8 символов.");
+                    if (!value.Any(char.IsDigit))
+                        throw new Exception("Пароль должен содержать хотя бы одну цифру.");
+                    if (!value.Any(char.IsUpper))
+                        throw new Exception("Пароль должен содержать хотя бы одну заглавную букву.");
+                    if (!value.Any(ch => "!@#$%^&*()_-+=[]{}:;?,.<>/|`~".Contains(ch)))
+                        throw new Exception("Пароль должен содержать хотя бы один специальный символ.");
+                    if (value.Contains(" "))
+                        throw new Exception("Пароль не должен содержать пробелы.");
+
+                    _password = value;
+                }
+            }
+
+            private string _authCode;
+            public string AuthCode
+            {
+                get => _authCode;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value))
+                        throw new Exception("Код авторизации не может быть пустым.");
+                    _authCode = value.Trim();
+                }
+            }
+
+            public void SaveToFile(string folderPath)
+            {
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                string filePath = Path.Combine(folderPath, $"{Login}.txt");
+
+                using (StreamWriter sw = new StreamWriter(filePath))
+                {
+                    sw.WriteLine($"ФИО={FIO}");
+                    sw.WriteLine($"Факультет={Faculty}");
+                    sw.WriteLine($"Должность={Position}");
+                    sw.WriteLine($"Пол={Gender}");
+                    sw.WriteLine($"ДатаРождения={BirthDate:yyyy-MM-dd}");
+                    sw.WriteLine($"Email={Email}");
+                    sw.WriteLine($"Телефон={Phone}");
+                    sw.WriteLine($"Логин={Login}");
+                    sw.WriteLine($"Пароль={Password}");
+                    sw.WriteLine($"КодАвторизации={AuthCode}");
+                }
+            }
+        
+
+
+        public bool CheckLoginPassword(string login, string password)
+            {
+                return Login == login && Password == password;
+            }
+
+            public bool CheckAuthCode(string code)
+            {
+                return AuthCode == code;
+            }
+
+            public bool CheckKeyFile(string keyFilePath)
+            {
+                if (!File.Exists(keyFilePath)) return false;
+
+                string fileCode = File.ReadAllText(keyFilePath).Trim();
+                return AuthCode == fileCode;
+            }
+        }
+
+        private void btn2GO_Click(object sender, EventArgs e)
+        {
+            txt2MSG.Clear();
+            try
+            {
+                Employee emp = new Employee();
+                emp.FIO = txt2FIO.Text;
+                emp.Faculty = cmb2Faculty.SelectedItem?.ToString();
+                emp.Position = cmb2Position.SelectedItem?.ToString();
+                emp.Gender = cmb2Gender.SelectedItem?.ToString();
+                emp.BirthDate = dtp2BirthDate.Value;
+                emp.Email = txt2Email.Text;
+                emp.Phone = txt2Phone.Text;
+                emp.Login = txt2Login.Text;
+                emp.Password = txt2Password.Text;
+                emp.AuthCode = txt2AuthCode.Text;
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedLogin = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1].Trim();
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+                    if (savedLogin == emp.Login)
+                        throw new Exception("Пользователь с таким логином уже зарегистрирован.");
+                    if (savedCode == emp.AuthCode)
+                        throw new Exception("Такой код авторизации уже существует. Введите другой.");
+                }
+
+                emp.SaveToFile(folderPath);
+                txt2MSG.Text = $"Пользователь {emp.FIO} успешно зарегистрирован.\r\nФайл создан: {Path.Combine(folderPath, emp.Login + ".txt")}";
+            }
+            catch (Exception ex)
+            {
+                txt2MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn31Login_Click(object sender, EventArgs e)
+        {
+            txt31MSG.Clear();
+
+            try
+            {
+                string login = txt31Login.Text.Trim();
+                string password = txt31Password.Text;
+
+                if (string.IsNullOrWhiteSpace(login))
+                    throw new Exception("Логин не может быть пустым.");
+
+                if (string.IsNullOrWhiteSpace(password))
+                    throw new Exception("Пароль не может быть пустым.");
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+                string filePath = Path.Combine(folderPath, $"{login}.txt");
+
+                if (!File.Exists(filePath))
+                    throw new Exception("Пользователь с таким логином не найден.");
+
+                string[] lines = File.ReadAllLines(filePath);
+                string savedPassword = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1];
+
+                if (savedPassword != password)
+                    throw new Exception("Неверный пароль.");
+
+                txt31MSG.Text = $"Авторизация успешна! Добро пожаловать, {login}.\r\n\nДанные пользователя:\r\n" +
+                                string.Join("\r\n", lines);
+            }
+            catch (Exception ex)
+            {
+                txt31MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+
+        private void btn32Login_Click(object sender, EventArgs e)
+        {
+            txt32MSG.Clear();
+
+            try
+            {
+                string code = txt32AuthCode.Text.Trim();
+                if (string.IsNullOrWhiteSpace(code))
+                    throw new Exception("Код авторизации не может быть пустым.");
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                bool found = false;
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1];
+
+                    if (savedCode == code)
+                    {
+                        string login = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1];
+                        txt32MSG.Text = $"Авторизация успешна! Добро пожаловать, {login}.\r\n\nДанные пользователя:\r\n" +
+                                        string.Join("\r\n", lines);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации не найден.");
+            }
+            catch (Exception ex)
+            {
+                txt32MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn33Browse_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                txt33KeyFile.Text = ofd.FileName;
+            }
+        }
+
+        private void btn33Login_Click(object sender, EventArgs e)
+        {
+            txt33MSG.Clear();
+
+            try
+            {
+                string keyFilePath = txt33KeyFile.Text.Trim();
+                if (string.IsNullOrWhiteSpace(keyFilePath))
+                    throw new Exception("Файл ключа не выбран.");
+
+                if (!File.Exists(keyFilePath))
+                    throw new Exception("Файл ключа не найден.");
+
+                string[] keyFileLines = File.ReadAllLines(keyFilePath);
+                string codeLine = keyFileLines.FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+
+                if (codeLine == null)
+                    throw new Exception("В выбранном файле не найден код авторизации.");
+
+                string code = codeLine.Split('=')[1].Trim();
+
+                Console.WriteLine($"Ищем код: '{code}'");
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception($"Папка не найдена: {folderPath}");
+
+                bool found = false;
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCodeLine = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+
+                    if (savedCodeLine != null)
+                    {
+                        string savedCode = savedCodeLine.Split('=')[1].Trim();
+
+                        if (savedCode == code)
+                        {
+                            string login = lines.First(l => l.StartsWith("Логин=")).Split('=')[1];
+                            txt33MSG.Text = $"Авторизация успешна! Добро пожаловать, {login}.\r\n\nДанные пользователя:\r\n" +
+                                            string.Join("\r\n", lines);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации из файла не найден.");
+            }
+            catch (Exception ex)
+            {
+                txt33MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn41Login_Click(object sender, EventArgs e)
+        {
+            txt41MSG.Clear();
+
+            try
+            {
+                string login = txt41Login.Text.Trim();
+                string password = txt41Password.Text;
+
+                if (string.IsNullOrWhiteSpace(login))
+                    throw new Exception("Логин не может быть пустым.");
+                if (string.IsNullOrWhiteSpace(password))
+                    throw new Exception("Пароль не может быть пустым.");
+
+                string appRootPath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string employeesFolder = Path.Combine(appRootPath, "employees");
+                string filePath = Path.Combine(employeesFolder, $"{login}.txt");
+
+                if (!File.Exists(filePath))
+                    throw new Exception("Пользователь с таким логином не найден.");
+
+                string[] lines = File.ReadAllLines(filePath);
+                string savedPassword = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1];
+
+                if (savedPassword != password)
+                    throw new Exception("Неверный пароль.");
+
+                // Создание объекта после авторизации
+                Employee user = new Employee
+                {
+                    FIO = lines.First(l => l.StartsWith("ФИО=")).Split('=')[1],
+                    Faculty = lines.First(l => l.StartsWith("Факультет=")).Split('=')[1],
+                    Position = lines.First(l => l.StartsWith("Должность=")).Split('=')[1],
+                    Gender = lines.First(l => l.StartsWith("Пол=")).Split('=')[1],
+                    BirthDate = DateTime.Parse(lines.First(l => l.StartsWith("ДатаРождения=")).Split('=')[1]),
+                    Email = lines.First(l => l.StartsWith("Email=")).Split('=')[1],
+                    Phone = lines.First(l => l.StartsWith("Телефон=")).Split('=')[1],
+                    Login = login,
+                    Password = password,
+                    AuthCode = lines.First(l => l.StartsWith("КодАвторизации=")).Split('=')[1]
+                };
+
+                txt41MSG.Text = $"Авторизация успешна! Добро пожаловать, {user.FIO}.\r\nДанные пользователя:\r\n" +
+                                string.Join("\r\n", lines);
+            }
+            catch (Exception ex)
+            {
+                txt41MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void btn42Login_Click(object sender, EventArgs e)
+        {
+            txt42MSG.Clear();
+
+            try
+            {
+                string code = txt42AuthCode.Text.Trim();
+                if (string.IsNullOrWhiteSpace(code))
+                    throw new Exception("Код авторизации не может быть пустым.");
+
+                string appRootPath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string employeesFolder = Path.Combine(appRootPath, "employees");
+
+                bool found = false;
+                Employee user = null;
+
+                foreach (string file in Directory.GetFiles(employeesFolder, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1];
+
+                    if (savedCode == code)
+                    {
+                        user = new Employee
+                        {
+                            FIO = lines.First(l => l.StartsWith("ФИО=")).Split('=')[1],
+                            Faculty = lines.First(l => l.StartsWith("Факультет=")).Split('=')[1],
+                            Position = lines.First(l => l.StartsWith("Должность=")).Split('=')[1],
+                            Gender = lines.First(l => l.StartsWith("Пол=")).Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.First(l => l.StartsWith("ДатаРождения=")).Split('=')[1]),
+                            Email = lines.First(l => l.StartsWith("Email=")).Split('=')[1],
+                            Phone = lines.First(l => l.StartsWith("Телефон=")).Split('=')[1],
+                            Login = lines.First(l => l.StartsWith("Логин=")).Split('=')[1],
+                            Password = lines.First(l => l.StartsWith("Пароль=")).Split('=')[1],
+                            AuthCode = code
+                        };
+
+                        txt42MSG.Text = $"Авторизация успешна! Добро пожаловать, {user.FIO}.\r\nДанные пользователя:\r\n" +
+                                        string.Join("\r\n", lines);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации не найден.");
+            }
+            catch (Exception ex)
+            {
+                txt42MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+  
+        private void btn43Browse_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                txt43KeyFile.Text = ofd.FileName;
+            }
+        }
+
+        private void btn43Login_Click(object sender, EventArgs e)
+        {
+            txt43MSG.Clear();
+
+            try
+            {
+                string keyFilePath = txt43KeyFile.Text.Trim();
+                if (string.IsNullOrWhiteSpace(keyFilePath))
+                    throw new Exception("Файл ключа не выбран.");
+                if (!File.Exists(keyFilePath))
+                    throw new Exception("Файл ключа не найден.");
+
+                string codeLine = File.ReadAllLines(keyFilePath).FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+                if (codeLine == null)
+                    throw new Exception("В выбранном файле не найден код авторизации.");
+
+                string code = codeLine.Split('=')[1].Trim();
+
+                string appRootPath = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string employeesFolder = Path.Combine(appRootPath, "employees");
+
+                bool found = false;
+                Employee user = null;
+
+                foreach (string file in Directory.GetFiles(employeesFolder, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1];
+
+                    if (savedCode == code)
+                    {
+                        user = new Employee
+                        {
+                            FIO = lines.First(l => l.StartsWith("ФИО=")).Split('=')[1],
+                            Faculty = lines.First(l => l.StartsWith("Факультет=")).Split('=')[1],
+                            Position = lines.First(l => l.StartsWith("Должность=")).Split('=')[1],
+                            Gender = lines.First(l => l.StartsWith("Пол=")).Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.First(l => l.StartsWith("ДатаРождения=")).Split('=')[1]),
+                            Email = lines.First(l => l.StartsWith("Email=")).Split('=')[1],
+                            Phone = lines.First(l => l.StartsWith("Телефон=")).Split('=')[1],
+                            Login = lines.First(l => l.StartsWith("Логин=")).Split('=')[1],
+                            Password = lines.First(l => l.StartsWith("Пароль=")).Split('=')[1],
+                            AuthCode = code
+                        };
+
+                        txt43MSG.Text = $"Авторизация успешна! Добро пожаловать, {user.FIO}.\r\nДанные пользователя:\r\n" +
+                                        string.Join("\r\n", lines);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации из файла не найден.");
+            }
+            catch (Exception ex)
+            {
+                txt43MSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+    }
+}
