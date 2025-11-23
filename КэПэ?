@@ -1,133 +1,326 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
-namespace RobertsFloresManualInput
+namespace Coursework_CS_WF
 {
-    class Graph
+    public partial class Coursework_CS_WF : Form
     {
-        public int N { get; }
-        public List<int>[] M; // Матрица M: M[j] — список вершин, смежных с x_j (т.е. столбец j)
-
-        public Graph(int n)
+        public Coursework_CS_WF()
         {
-            N = n;
-            M = new List<int>[n];
-            for (int i = 0; i < n; i++)
-                M[i] = new List<int>();
+            InitializeComponent();
+
+            // Двойная буферизация для панели
+            pnlGRAPH.GetType()
+            .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+            .SetValue(pnlGRAPH, true, null);
         }
 
-        public void InputMatrix()
+        class Node
         {
-            Console.WriteLine("Введите матрицу M (списки смежных вершин для каждого столбца).");
-            Console.WriteLine("Вершины нумеруются с 1 до N. Пример ввода: 2 3 4 (или пусто, если нет соседей).");
-            for (int j = 0; j < N; j++)
+            public int X;
+            public int Y;
+            public string Name;
+            public Color Color = Color.FromArgb(220, 187, 255);
+        }
+
+        class Edge
+        {
+            public Node From;
+            public Node To;
+        }
+
+        List<Node> nodes = new List<Node>();
+        List<Edge> edges = new List<Edge>();
+
+        enum Mode { None, AddNode, AddEdge, Delete, Move }
+        Mode currentMode = Mode.None;
+
+        Node firstNode = null;
+
+        Node movingNode = null;
+        bool isDragging = false;
+
+        const int NODE_RADIUS = 22;
+
+        int nextNodeIndex = 1;
+
+        private string GenerateNodeName()
+        {
+            int i = 1;
+            while (nodes.Any(n => n.Name == "x" + i))
+                i++;
+            return "x" + i;
+        }
+
+        private void btnAddNode_Click(object sender, EventArgs e)
+        {
+            currentMode = Mode.AddNode;
+            txtMSG.Text = "Режим: Добавление вершин";
+        }
+
+        private void btnAddEdge_Click(object sender, EventArgs e)
+        {
+            currentMode = Mode.AddEdge;
+            firstNode = null;
+            txtMSG.Text = "Режим: Добавление связи. Выберите две вершины.";
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            currentMode = Mode.Delete;
+            txtMSG.Text = "Режим: Удаление";
+        }
+
+        private void pnlGRAPH_MouseDown(object sender, MouseEventArgs e)
+        {
+            Node clicked = FindNodeAtPoint(e.Location);
+
+            switch (currentMode)
             {
-                Console.Write($"Столбец {j + 1} (смежные вершины x_k для x_{j + 1}): ");
-                string line = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(line)) continue;
-                var nums = line.Split(new[] { ' ', ',', ';', '\t' }, StringSplitOptions.RemoveEmptyEntries)
-                               .Select(s => int.Parse(s) - 1) // храним в 0-based
-                               .ToList();
-                M[j].AddRange(nums);
+                case Mode.AddNode:
+                    int x = Math.Max(NODE_RADIUS, Math.Min(e.X, pnlGRAPH.Width - NODE_RADIUS));
+                    int y = Math.Max(NODE_RADIUS, Math.Min(e.Y, pnlGRAPH.Height - NODE_RADIUS));
+
+                    // Генерация уникального имени вершины
+                    string name = GenerateNodeName();
+
+                    nodes.Add(new Node
+                    {
+                        X = x,
+                        Y = y,
+                        Name = name,
+                        Color = Color.FromArgb(220, 187, 255) // цвет вершины
+                    });
+                    txtMSG.Text = $"Добавлена вершина {name}";
+                    pnlGRAPH.Invalidate();
+                    break;
+
+                case Mode.AddEdge:
+                    if (clicked == null) return;
+
+                    if (firstNode == null)
+                    {
+                        firstNode = clicked;
+                        txtMSG.Text = $"Выбрана первая вершина: {clicked.Name}. Теперь выберите вторую.";
+                    }
+                    else
+                    {
+                        edges.Add(new Edge { From = firstNode, To = clicked });
+                        txtMSG.Text = $"Связь {firstNode.Name} → {clicked.Name} создана.";
+                        firstNode = null;
+                        pnlGRAPH.Invalidate();
+                    }
+                    break;
+
+                case Mode.Delete:
+                    if (clicked != null)
+                    {
+                        edges.RemoveAll(ed => ed.From == clicked || ed.To == clicked);
+                        nodes.Remove(clicked);
+                        txtMSG.Text = $"Удалена вершина {clicked.Name}";
+                        pnlGRAPH.Invalidate();
+                    }
+                    break;
+
+                case Mode.Move:
+                    if (clicked != null)
+                    {
+                        movingNode = clicked;
+                        isDragging = true;
+                    }
+                    break;
             }
         }
 
-        public void FindHamiltonianChainsAndCycles(int startVertex)
+        private Node FindNodeAtPoint(Point p)
         {
-            var S = new List<int>(); // множество S
-            bool[] visited = new bool[N];
-            List<List<int>> foundChains = new List<List<int>>();
-            List<List<int>> foundCycles = new List<List<int>>();
-
-            void Backtrack(int p)
+            foreach (var n in nodes)
             {
-                // Шаг 3: если есть возможные вершины
-                foreach (int xk in M[p])
+                double dx = p.X - n.X;
+                double dy = p.Y - n.Y;
+
+                if (Math.Sqrt(dx * dx + dy * dy) <= NODE_RADIUS)
+                    return n;
+            }
+            return null;
+        }
+
+        private void DrawArrow(Graphics g, Node from, Node to)
+        {
+            float dx = to.X - from.X;
+            float dy = to.Y - from.Y;
+            float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+
+            if (dist < 1) return;
+
+            float nx = dx / dist;
+            float ny = dy / dist;
+
+            float startX = from.X + nx * NODE_RADIUS;
+            float startY = from.Y + ny * NODE_RADIUS;
+
+            float endX = to.X - nx * NODE_RADIUS;
+            float endY = to.Y - ny * NODE_RADIUS;
+
+            using (Pen pen = new Pen(Color.Black, 3))
+            {
+                pen.EndCap = LineCap.Custom;
+
+                // Стрелка
+                AdjustableArrowCap arrow = new AdjustableArrowCap(6, 8); // (ширина, высота)
+                pen.CustomEndCap = arrow;
+
+                g.DrawLine(pen, startX, startY, endX, endY);
+            }
+        }
+
+        private void pnlGRAPH_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+
+            foreach (var edge in edges)
+            {
+                DrawArrow(g, edge.From, edge.To);
+            }
+
+            foreach (var n in nodes)
+            {
+                g.FillEllipse(new SolidBrush(n.Color),
+              n.X - NODE_RADIUS, n.Y - NODE_RADIUS,
+              NODE_RADIUS * 2, NODE_RADIUS * 2);
+
+                g.DrawEllipse(Pens.Black,
+                              n.X - NODE_RADIUS, n.Y - NODE_RADIUS,
+                              NODE_RADIUS * 2, NODE_RADIUS * 2);
+
+                var sf = new StringFormat()
                 {
-                    if (!visited[xk])
+                    Alignment = StringAlignment.Center,
+                    LineAlignment = StringAlignment.Center
+                };
+
+                g.DrawString(n.Name, new Font("Arial", 11, FontStyle.Bold),
+                             Brushes.Black,
+                             new RectangleF(n.X - NODE_RADIUS, n.Y - NODE_RADIUS,
+                                            NODE_RADIUS * 2, NODE_RADIUS * 2),
+                             sf);
+            }
+        }
+
+        private void btnMove_Click(object sender, EventArgs e)
+        {
+            currentMode = Mode.Move;
+            txtMSG.Text = "Режим: Перемещение вершин. Зажмите ЛКМ на вершине и двигайте.";
+        }
+
+        private void pnlGRAPH_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (currentMode == Mode.Move && isDragging && movingNode != null)
+            {
+                // Ограничиваем координаты по X
+                movingNode.X = Math.Max(NODE_RADIUS, e.X);                 // слева
+                movingNode.X = Math.Min(pnlGRAPH.Width - NODE_RADIUS, movingNode.X); // справа
+
+                // Ограничиваем координаты по Y
+                movingNode.Y = Math.Max(NODE_RADIUS, e.Y);                 // сверху
+                movingNode.Y = Math.Min(pnlGRAPH.Height - NODE_RADIUS, movingNode.Y); // снизу
+
+                pnlGRAPH.Invalidate();
+            }
+        }
+
+        private void pnlGRAPH_MouseUp(object sender, MouseEventArgs e)
+        {
+            isDragging = false;
+            movingNode = null;
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "Text files|*.txt";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter sw = new StreamWriter(sfd.FileName))
+                {
+                    sw.WriteLine("# Nodes");
+                    foreach (var n in nodes)
                     {
-                        // Шаг 4
-                        visited[xk] = true;
-                        S.Add(xk);
+                        sw.WriteLine($"{n.Name};{n.X};{n.Y};{n.Color.R};{n.Color.G};{n.Color.B}");
+                    }
 
-                        if (S.Count == N)
-                        {
-                            // Шаг 5: найдена гамильтонова цепь
-                            foundChains.Add(new List<int>(S));
-
-                            // Шаг 6: проверяем, есть ли ребро (p, x1)
-                            if (M[xk].Contains(startVertex))
-                            {
-                                foundCycles.Add(new List<int>(S));
-                            }
-                        }
-                        else
-                        {
-                            Backtrack(xk);
-                        }
-
-                        // Шаг 7: возврат
-                        visited[xk] = false;
-                        S.RemoveAt(S.Count - 1);
+                    sw.WriteLine("# Edges");
+                    foreach (var f in edges)
+                    {
+                        sw.WriteLine($"{f.From.Name};{f.To.Name}");
                     }
                 }
             }
+        }
 
-            visited[startVertex] = true;
-            S.Add(startVertex);
-            Backtrack(startVertex);
+        private void btnOpen_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Text files|*.txt";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                nodes.Clear();
+                edges.Clear();
 
-            Console.WriteLine("\n==== РЕЗУЛЬТАТ ====");
-            if (foundChains.Count == 0)
-            {
-                Console.WriteLine("Гамильтоновых цепей не найдено.");
-            }
-            else
-            {
-                Console.WriteLine($"Найдено гамильтоновых цепей: {foundChains.Count}");
-                int i = 1;
-                foreach (var path in foundChains)
-                    Console.WriteLine($"{i++}) {FormatPath(path)}");
-            }
+                var lines = File.ReadAllLines(ofd.FileName);
+                bool readingNodes = false;
+                bool readingEdges = false;
 
-            if (foundCycles.Count == 0)
-            {
-                Console.WriteLine("Гамильтоновых циклов не найдено.");
-            }
-            else
-            {
-                Console.WriteLine($"\nНайдено гамильтоновых циклов: {foundCycles.Count}");
-                int i = 1;
-                foreach (var cyc in foundCycles)
-                    Console.WriteLine($"{i++}) {FormatPath(cyc)} (замыкается в x{startVertex + 1})");
+                foreach (var line in lines)
+                {
+                    if (line.StartsWith("# Nodes")) { readingNodes = true; readingEdges = false; continue; }
+                    if (line.StartsWith("# Edges")) { readingNodes = false; readingEdges = true; continue; }
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+
+                    if (readingNodes)
+                    {
+                        var parts = line.Split(';');
+                        nodes.Add(new Node
+                        {
+                            Name = parts[0],
+                            X = int.Parse(parts[1]),
+                            Y = int.Parse(parts[2]),
+                            Color = Color.FromArgb(int.Parse(parts[3]), int.Parse(parts[4]), int.Parse(parts[5]))
+                        });
+                    }
+                    else if (readingEdges)
+                    {
+                        var parts = line.Split(';');
+                        Node from = nodes.First(n => n.Name == parts[0]);
+                        Node to = nodes.First(n => n.Name == parts[1]);
+                        edges.Add(new Edge { From = from, To = to });
+                    }
+                }
+
+                pnlGRAPH.Invalidate();
             }
         }
 
-        static string FormatPath(List<int> path)
+        private void btnClear_Click(object sender, EventArgs e)
         {
-            return string.Join(" -> ", path.Select(x => $"x{x + 1}"));
-        }
-    }
+            nodes.Clear();  // удаляем все вершины
+            edges.Clear();  // удаляем все рёбра
+            firstNode = null; // сбрасываем выбранную вершину для добавления ребра
+            movingNode = null; // сброс перетаскивания
+            isDragging = false;
 
-    class Program
-    {
-        static void Main()
-        {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.Write("Введите количество вершин графа (n): ");
-            int n = int.Parse(Console.ReadLine());
-
-            var g = new Graph(n);
-            g.InputMatrix();
-
-            Console.Write("\nВведите начальную вершину (номер от 1 до n): ");
-            int start = int.Parse(Console.ReadLine()) - 1;
-
-            g.FindHamiltonianChainsAndCycles(start);
-
-            Console.WriteLine("\nРабота завершена. Нажмите Enter...");
-            Console.ReadLine();
+            pnlGRAPH.Invalidate(); // перерисовываем панель
+            txtMSG.Text = "Полотно очищено";
         }
     }
 }
