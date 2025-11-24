@@ -1,0 +1,977 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_11_WF
+{
+    public partial class NETFramework_cs_11_WF : Form
+    {
+        public NETFramework_cs_11_WF()
+        {
+            InitializeComponent();
+        }
+
+        private void REbtnGO_Click(object sender, EventArgs e)
+        {
+            REtxtMSG.Clear();
+
+            try
+            {
+                Employee emp = new Employee
+                {
+                    FIO = REtxtFIO.Text,
+                    Faculty = REcmbFaculty.SelectedItem?.ToString(),
+                    Position = REcmbPosition.SelectedItem?.ToString(),
+                    Gender = REcmbGender.SelectedItem?.ToString(),
+                    BirthDate = REdtpBirthDate.Value,
+                    Email = REtxtEmail.Text,
+                    Phone = REtxtPhone.Text,
+                    Login = REtxtLogin.Text,
+                    Password = REtxtPassword.Text,
+                    AuthCode = REtxtAuthCode.Text
+                };
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+
+                    string savedLogin = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1].Trim();
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+
+                    if (savedLogin == emp.Login)
+                        throw new Exception("Пользователь с таким логином уже зарегистрирован.");
+
+                    if (savedCode == emp.AuthCode)
+                        throw new Exception("Такой код авторизации уже существует. Укажите другой.");
+                }
+
+                emp.SaveToFile(folderPath);
+
+                REtxtMSG.Text =
+                    $"Пользователь {emp.FIO} успешно зарегистрирован.\r\n" +
+                    $"Файл создан: {Path.Combine(folderPath, emp.Login + ".txt")}";
+            }
+            catch (Exception ex)
+            {
+                REtxtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void RAbtnGO_Click(object sender, EventArgs e)
+        {
+            RAtxtMSG.Clear();
+
+            try
+            {
+                Abiturient ab = new Abiturient();
+                ab.FIO = RAtxtFIO.Text;
+                ab.ExamYear = (int)RAnudExamYear.Value;
+                ab.YearOfAdmission = (int)RAnudAdmissionYear.Value;
+                ab.EgeScore = (int)RAnudEgeScore.Value;
+                ab.Group = RAcmbGroup.SelectedItem?.ToString();
+                ab.Gender = RAcmbGender.SelectedItem?.ToString();
+                ab.BirthDate = RAdtpBirthDate.Value;
+                ab.Email = RAtxtEmail.Text;
+                ab.Phone = RAtxtPhone.Text;
+                ab.Login = RAtxtLogin.Text;
+                ab.Password = RAtxtPassword.Text;
+                ab.AuthCode = RAtxtAuthCode.Text;
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "abiturients");
+
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+
+                    string savedLogin =
+                        lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1].Trim();
+
+                    string savedCode =
+                        lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+
+                    if (savedLogin == ab.Login)
+                        throw new Exception("Абитуриент с таким логином уже зарегистрирован.");
+
+                    if (savedCode == ab.AuthCode)
+                        throw new Exception("Такой код авторизации уже существует. Введите другой.");
+                }
+
+                ab.SaveToFile(folderPath);
+
+                RAtxtMSG.Text =
+                    $"Абитуриент {ab.FIO} успешно зарегистрирован.\r\nФайл создан: {Path.Combine(folderPath, ab.Login + ".txt")}";
+            }
+            catch (Exception ex)
+            {
+                RAtxtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AE1btnLogin_Click(object sender, EventArgs e)
+        {
+            AE1txtMSG.Clear();
+            try
+            {
+                string login = AE1txtLogin.Text.Trim();
+                string password = AE1txtPassword.Text;
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Папка с сотрудниками не найдена.");
+
+                bool found = false;
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedLogin = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1].Trim();
+                    if (savedLogin == login)
+                    {
+                        string savedPassword = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1];
+                        Employee emp = new Employee();
+                        emp.FIO = lines.FirstOrDefault(l => l.StartsWith("ФИО="))?.Split('=')[1];
+                        emp.Faculty = lines.FirstOrDefault(l => l.StartsWith("Факультет="))?.Split('=')[1];
+                        emp.Position = lines.FirstOrDefault(l => l.StartsWith("Должность="))?.Split('=')[1];
+                        emp.Gender = lines.FirstOrDefault(l => l.StartsWith("Пол="))?.Split('=')[1];
+                        emp.BirthDate = DateTime.Parse(lines.FirstOrDefault(l => l.StartsWith("ДатаРождения="))?.Split('=')[1]);
+                        emp.Email = lines.FirstOrDefault(l => l.StartsWith("Email="))?.Split('=')[1];
+                        emp.Phone = lines.FirstOrDefault(l => l.StartsWith("Телефон="))?.Split('=')[1];
+                        emp.Login = savedLogin;
+                        emp.Password = savedPassword;
+                        emp.AuthCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1];
+
+                        if (!emp.CheckLoginPassword(login, password))
+                            throw new Exception("Неверный пароль.");
+
+                        UserINFO ui = new UserINFO(emp);
+                        ui.Show();
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Пользователь с таким логином не найден.");
+            }
+            catch (Exception ex)
+            {
+                AE1txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AE2btnLogin_Click(object sender, EventArgs e)
+        {
+            AE2txtMSG.Clear();
+            try
+            {
+                string authCode = AE2txtAuthCode.Text.Trim();
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Папка с сотрудниками не найдена.");
+
+                bool found = false;
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+
+                    if (savedCode == authCode)
+                    {
+                        Employee emp = new Employee();
+                        emp.FIO = lines.FirstOrDefault(l => l.StartsWith("ФИО="))?.Split('=')[1];
+                        emp.Faculty = lines.FirstOrDefault(l => l.StartsWith("Факультет="))?.Split('=')[1];
+                        emp.Position = lines.FirstOrDefault(l => l.StartsWith("Должность="))?.Split('=')[1];
+                        emp.Gender = lines.FirstOrDefault(l => l.StartsWith("Пол="))?.Split('=')[1];
+                        emp.BirthDate = DateTime.Parse(lines.FirstOrDefault(l => l.StartsWith("ДатаРождения="))?.Split('=')[1]);
+                        emp.Email = lines.FirstOrDefault(l => l.StartsWith("Email="))?.Split('=')[1];
+                        emp.Phone = lines.FirstOrDefault(l => l.StartsWith("Телефон="))?.Split('=')[1];
+                        emp.Login = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1];
+                        emp.Password = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1];
+                        emp.AuthCode = savedCode;
+
+                        if (!emp.CheckAuthCode(authCode))
+                            throw new Exception("Неверный код авторизации.");
+
+                        UserINFO ui = new UserINFO(emp);
+                        ui.Show();
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Пользователь с таким кодом авторизации не найден.");
+            }
+            catch (Exception ex)
+            {
+                AE2txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AE3btnBrowse_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                AE3txtKeyFile.Text = ofd.FileName;
+            }
+        }
+
+        private void AE3btnLogin_Click(object sender, EventArgs e)
+        {
+            AE3txtMSG.Clear();
+
+            try
+            {
+                string keyFilePath = AE3txtKeyFile.Text.Trim();
+                if (string.IsNullOrWhiteSpace(keyFilePath))
+                    throw new Exception("Файл ключа не выбран.");
+
+                if (!File.Exists(keyFilePath))
+                    throw new Exception("Файл ключа не найден.");
+
+                string[] keyFileLines = File.ReadAllLines(keyFilePath);
+                string codeLine = keyFileLines.FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+
+                if (codeLine == null)
+                    throw new Exception("В выбранном файле не найден код авторизации.");
+
+                string code = codeLine.Split('=')[1].Trim();
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "employees");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception($"Папка не найдена: {folderPath}");
+
+                bool found = false;
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCodeLine = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+
+                    if (savedCodeLine != null && savedCodeLine.Split('=')[1].Trim() == code)
+                    {
+                        Employee emp = new Employee
+                        {
+                            FIO = lines.First(l => l.StartsWith("ФИО=")).Split('=')[1],
+                            Faculty = lines.First(l => l.StartsWith("Факультет=")).Split('=')[1],
+                            Position = lines.First(l => l.StartsWith("Должность=")).Split('=')[1],
+                            Gender = lines.First(l => l.StartsWith("Пол=")).Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.First(l => l.StartsWith("ДатаРождения=")).Split('=')[1]),
+                            Email = lines.First(l => l.StartsWith("Email=")).Split('=')[1],
+                            Phone = lines.First(l => l.StartsWith("Телефон=")).Split('=')[1],
+                            Login = lines.First(l => l.StartsWith("Логин=")).Split('=')[1],
+                            Password = lines.First(l => l.StartsWith("Пароль=")).Split('=')[1],
+                            AuthCode = code
+                        };
+
+                        UserINFO ui = new UserINFO(emp);
+                        ui.Show();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации из файла не найден.");
+            }
+            catch (Exception ex)
+            {
+                AE3txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AA1btnLogin_Click(object sender, EventArgs e)
+        {
+            AA1txtMSG.Clear();
+
+            try
+            {
+                string login = AA1txtLogin.Text.Trim();
+                string password = AA1txtPassword.Text;
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "abiturients");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Папка с абитуриентами не найдена.");
+
+                bool found = false;
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedLogin = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1].Trim();
+
+                    if (savedLogin == login)
+                    {
+                        string savedPassword = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1];
+
+                        Abiturient ab = new Abiturient
+                        {
+                            FIO = lines.FirstOrDefault(l => l.StartsWith("ФИО="))?.Split('=')[1],
+                            ExamYear = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодСдачиЕГЭ="))?.Split('=')[1]),
+                            YearOfAdmission = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодПоступления="))?.Split('=')[1]),
+                            EgeScore = int.Parse(lines.FirstOrDefault(l => l.StartsWith("БаллыЕГЭ="))?.Split('=')[1]),
+                            Group = lines.FirstOrDefault(l => l.StartsWith("Группа="))?.Split('=')[1],
+                            Gender = lines.FirstOrDefault(l => l.StartsWith("Пол="))?.Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.FirstOrDefault(l => l.StartsWith("ДатаРождения="))?.Split('=')[1]),
+                            Email = lines.FirstOrDefault(l => l.StartsWith("Email="))?.Split('=')[1],
+                            Phone = lines.FirstOrDefault(l => l.StartsWith("Телефон="))?.Split('=')[1],
+                            Login = savedLogin,
+                            Password = savedPassword,
+                            AuthCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1]
+                        };
+
+                        if (!ab.CheckLoginPassword(login, password))
+                            throw new Exception("Неверный пароль.");
+
+                        UserINFO ui = new UserINFO(ab);
+                        ui.Show();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Пользователь с таким логином не найден.");
+            }
+            catch (Exception ex)
+            {
+                AA1txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AA2btnLogin_Click(object sender, EventArgs e)
+        {
+            AA2txtMSG.Clear();
+
+            try
+            {
+                string authCode = AA2txtAuthCode.Text.Trim();
+
+                if (string.IsNullOrWhiteSpace(authCode))
+                    throw new Exception("Код авторизации не введен.");
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "abiturients");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Папка с абитуриентами не найдена.");
+
+                bool found = false;
+
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+
+                    if (savedCode == authCode)
+                    {
+                        Abiturient ab = new Abiturient
+                        {
+                            FIO = lines.FirstOrDefault(l => l.StartsWith("ФИО="))?.Split('=')[1],
+                            ExamYear = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодСдачиЕГЭ="))?.Split('=')[1]),
+                            YearOfAdmission = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодПоступления="))?.Split('=')[1]),
+                            EgeScore = int.Parse(lines.FirstOrDefault(l => l.StartsWith("БаллыЕГЭ="))?.Split('=')[1]),
+                            Group = lines.FirstOrDefault(l => l.StartsWith("Группа="))?.Split('=')[1],
+                            Gender = lines.FirstOrDefault(l => l.StartsWith("Пол="))?.Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.FirstOrDefault(l => l.StartsWith("ДатаРождения="))?.Split('=')[1]),
+                            Email = lines.FirstOrDefault(l => l.StartsWith("Email="))?.Split('=')[1],
+                            Phone = lines.FirstOrDefault(l => l.StartsWith("Телефон="))?.Split('=')[1],
+                            Login = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1],
+                            Password = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1],
+                            AuthCode = savedCode
+                        };
+
+                        UserINFO ui = new UserINFO(ab);
+                        ui.Show();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации не найден.");
+            }
+            catch (Exception ex)
+            {
+                AA2txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+
+        private void AA3btnBrowse_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*";
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                AA3txtKeyFile.Text = ofd.FileName;
+            }
+        }
+
+        private void AA3btnLogin_Click(object sender, EventArgs e)
+        {
+            AA3txtMSG.Clear();
+
+            try
+            {
+                string keyFilePath = AA3txtKeyFile.Text.Trim();
+
+                if (string.IsNullOrWhiteSpace(keyFilePath))
+                    throw new Exception("Файл ключа не выбран.");
+
+                if (!File.Exists(keyFilePath))
+                    throw new Exception("Файл ключа не найден.");
+
+                string[] keyFileLines = File.ReadAllLines(keyFilePath);
+                string codeLine = keyFileLines.FirstOrDefault(l => l.StartsWith("КодАвторизации="));
+
+                if (codeLine == null)
+                    throw new Exception("В выбранном файле не найден код авторизации.");
+
+                string code = codeLine.Split('=')[1].Trim();
+
+                string projectRoot = Directory.GetParent(Application.StartupPath).Parent.Parent.FullName;
+                string folderPath = Path.Combine(projectRoot, "abiturients");
+
+                if (!Directory.Exists(folderPath))
+                    throw new Exception("Папка с абитуриентами не найдена.");
+
+                bool found = false;
+                foreach (string file in Directory.GetFiles(folderPath, "*.txt"))
+                {
+                    string[] lines = File.ReadAllLines(file);
+                    string savedCode = lines.FirstOrDefault(l => l.StartsWith("КодАвторизации="))?.Split('=')[1].Trim();
+
+                    if (savedCode == code)
+                    {
+                        Abiturient ab = new Abiturient
+                        {
+                            FIO = lines.FirstOrDefault(l => l.StartsWith("ФИО="))?.Split('=')[1],
+                            ExamYear = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодСдачиЕГЭ="))?.Split('=')[1]),
+                            YearOfAdmission = int.Parse(lines.FirstOrDefault(l => l.StartsWith("ГодПоступления="))?.Split('=')[1]),
+                            EgeScore = int.Parse(lines.FirstOrDefault(l => l.StartsWith("БаллыЕГЭ="))?.Split('=')[1]),
+                            Group = lines.FirstOrDefault(l => l.StartsWith("Группа="))?.Split('=')[1],
+                            Gender = lines.FirstOrDefault(l => l.StartsWith("Пол="))?.Split('=')[1],
+                            BirthDate = DateTime.Parse(lines.FirstOrDefault(l => l.StartsWith("ДатаРождения="))?.Split('=')[1]),
+                            Email = lines.FirstOrDefault(l => l.StartsWith("Email="))?.Split('=')[1],
+                            Phone = lines.FirstOrDefault(l => l.StartsWith("Телефон="))?.Split('=')[1],
+                            Login = lines.FirstOrDefault(l => l.StartsWith("Логин="))?.Split('=')[1],
+                            Password = lines.FirstOrDefault(l => l.StartsWith("Пароль="))?.Split('=')[1],
+                            AuthCode = savedCode
+                        };
+
+                        UserINFO ui = new UserINFO(ab);
+                        ui.Show();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    throw new Exception("Код авторизации из файла не найден.");
+            }
+            catch (Exception ex)
+            {
+                AA3txtMSG.Text = $"Ошибка: {ex.Message}";
+            }
+        }
+        private void AUbtnGuestLogin_Click(object sender, EventArgs e)
+        {
+            UserINFO ui = new UserINFO("Вы успешно авторизовались как гость.");
+            ui.Show();
+        }
+    }
+}
+
+//
+
+using NETFramework_cs_11_WF;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_11_WF
+{
+    public partial class UserINFO : Form
+    {
+        private Person _user;
+
+        internal UserINFO(Person user)
+        {
+            InitializeComponent();
+            _user = user;
+            DisplayUserData();
+        }
+
+        internal UserINFO(string guestMessage)
+        {
+            InitializeComponent();
+            USERtxtMSG.Text = guestMessage;
+        }
+
+        private void DisplayUserData()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            USERtxtMSG.SelectionStart = 0;
+            USERtxtMSG.SelectionLength = 0;
+
+            if (_user is Employee emp)
+            {
+                sb.AppendLine("Тип пользователя: Сотрудник ВУЗа");
+                sb.AppendLine($"ФИО: {emp.FIO}");
+                sb.AppendLine($"Факультет: {emp.Faculty}");
+                sb.AppendLine($"Должность: {emp.Position}");
+            }
+            else if (_user is Abiturient ab)
+            {
+                sb.AppendLine("Тип пользователя: Абитуриент");
+                sb.AppendLine($"ФИО: {ab.FIO}");
+                sb.AppendLine($"Группа: {ab.Group}");
+                sb.AppendLine($"Год сдачи ЕГЭ: {ab.ExamYear}");
+                sb.AppendLine($"Год поступления: {ab.YearOfAdmission}");
+                sb.AppendLine($"Баллы ЕГЭ: {ab.EgeScore}");
+            }
+
+            sb.AppendLine($"Пол: {_user.Gender}");
+            sb.AppendLine($"Дата рождения: {_user.BirthDate:yyyy-MM-dd}");
+            sb.AppendLine($"Email: {_user.Email}");
+            sb.AppendLine($"Телефон: {_user.Phone}");
+            sb.AppendLine($"Логин: {_user.Login}");
+            sb.AppendLine($"Код авторизации: {_user.AuthCode}");
+
+            USERtxtMSG.Text = sb.ToString();
+        }
+
+        private void USERbtnCLOSE_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void UserINFO_Load(object sender, EventArgs e)
+        {
+            USERtxtMSG.SelectionStart = 0;
+            USERtxtMSG.SelectionLength = 0;
+            this.BeginInvoke((Action)(() => USERbtnCLOSE.Focus()));
+        }
+    }
+}
+
+//
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace NETFramework_cs_11_WF
+{
+    internal abstract class User
+    {
+        private string _login;
+        public string Login
+        {
+            get => _login;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Логин не может быть пустым.");
+                _login = value.Trim();
+            }
+        }
+
+        private string _password;
+        public string Password
+        {
+            get => _password;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Пароль не может быть пустым.");
+                if (value.Length < 8)
+                    throw new Exception("Пароль должен содержать минимум 8 символов.");
+                if (!value.Any(char.IsDigit))
+                    throw new Exception("Пароль должен содержать хотя бы одну цифру.");
+                if (!value.Any(char.IsUpper))
+                    throw new Exception("Пароль должен содержать хотя бы одну заглавную букву.");
+                if (!value.Any(ch => "!@#$%^&*()_-+=[]{}:;?,.<>/|`~".Contains(ch)))
+                    throw new Exception("Пароль должен содержать хотя бы один специальный символ.");
+                if (value.Contains(" "))
+                    throw new Exception("Пароль не должен содержать пробелы.");
+
+                _password = value;
+            }
+        }
+
+        private string _authCode;
+        public string AuthCode
+        {
+            get => _authCode;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Код авторизации не может быть пустым.");
+                _authCode = value.Trim();
+            }
+        }
+
+        public virtual bool CheckLoginPassword(string login, string password)
+        {
+            return Login == login && Password == password;
+        }
+
+        public virtual bool CheckAuthCode(string code)
+        {
+            return AuthCode == code;
+        }
+
+        public virtual bool CheckKeyFile(string keyFilePath)
+        {
+            if (!File.Exists(keyFilePath)) return false;
+            string fileCode = File.ReadAllText(keyFilePath).Trim();
+            return AuthCode == fileCode;
+        }
+    }
+}
+
+//
+
+using NETFramework_cs_11_WF;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NETFramework_cs_11_WF
+{
+    internal class Person : User
+    {
+        private string _fio;
+        public string FIO
+        {
+            get => _fio;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("ФИО не может быть пустым.");
+                _fio = value.Trim();
+            }
+        }
+
+        private string _gender;
+        public string Gender
+        {
+            get => _gender;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Выберите пол.");
+                _gender = value;
+            }
+        }
+
+        private DateTime _birthDate;
+        public DateTime BirthDate
+        {
+            get => _birthDate;
+            set
+            {
+                DateTime minDate = new DateTime(1908, 6, 8);
+                DateTime maxDate = DateTime.Today;
+
+                if (value < minDate)
+                    throw new Exception($"Дата рождения не может быть раньше {minDate:dd.MM.yyyy}.");
+                if (value > maxDate)
+                    throw new Exception("Дата рождения не может быть из будущего.");
+
+                _birthDate = value;
+            }
+        }
+
+        private string _email;
+        public string Email
+        {
+            get => _email;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Email не может быть пустым.");
+                if (!value.All(ch =>
+                    (ch >= 'a' && ch <= 'z') ||
+                    (ch >= 'A' && ch <= 'Z') ||
+                    char.IsDigit(ch) ||
+                    ch == '@' || ch == '.' || ch == '-' || ch == '_'))
+                    throw new Exception("Email должен содержать только латинские буквы, цифры и символы . _ - @");
+
+                var parts = value.Split('@');
+                if (parts.Length != 2)
+                    throw new Exception("Email должен содержать один символ '@'");
+                if (string.IsNullOrWhiteSpace(parts[0]))
+                    throw new Exception("Email должен быть в формате имя@домен.зона");
+                if (!parts[1].Contains("."))
+                    throw new Exception("После '@' должны быть домен и доменная зона");
+
+                _email = value.Trim();
+            }
+        }
+
+        private string _phone;
+        public string Phone
+        {
+            get => _phone;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Телефон не может быть пустым.");
+
+                string phone = value.Trim();
+                if (phone.StartsWith("+"))
+                {
+                    if (phone.Length < 2 || !phone.Substring(1).All(char.IsDigit))
+                        throw new Exception("Телефон может содержать только цифры (или '+' в начале).");
+                }
+                else
+                {
+                    if (!phone.All(char.IsDigit))
+                        throw new Exception("Телефон может содержать только цифры (или '+' в начале).");
+                }
+
+                if (phone.Replace("+", "").Length < 10)
+                    throw new Exception("Телефон должен содержать минимум 10 цифр.");
+
+                _phone = phone;
+            }
+        }
+    }
+}
+
+//
+
+using NETFramework_cs_11_WF;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NETFramework_cs_11_WF
+{
+    internal class Employee : Person
+    {
+        private string _faculty;
+        public string Faculty
+        {
+            get => _faculty;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Выберите факультет.");
+                _faculty = value;
+            }
+        }
+    private string _position;
+        public string Position
+        {
+            get => _position;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Выберите должность.");
+                _position = value;
+            }
+        }
+
+        public void SaveToFile(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string filePath = Path.Combine(folderPath, $"{Login}.txt");
+
+            using (StreamWriter sw = new StreamWriter(filePath))
+            {
+                sw.WriteLine($"ФИО={FIO}");
+                sw.WriteLine($"Факультет={Faculty}");
+                sw.WriteLine($"Должность={Position}");
+                sw.WriteLine($"Пол={Gender}");
+                sw.WriteLine($"ДатаРождения={BirthDate:yyyy-MM-dd}");
+                sw.WriteLine($"Email={Email}");
+                sw.WriteLine($"Телефон={Phone}");
+                sw.WriteLine($"Логин={Login}");
+                sw.WriteLine($"Пароль={Password}");
+                sw.WriteLine($"КодАвторизации={AuthCode}");
+            }
+        }
+    }
+}
+
+//
+
+using NETFramework_cs_11_WF;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+
+namespace NETFramework_cs_11_WF
+{
+    internal class Abiturient : Person
+    {
+        private string _group;
+        public string Group
+        {
+            get => _group;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Выберите группу.");
+                _group = value;
+            }
+        }
+
+        private int _examYear;
+        public int ExamYear
+        {
+            get => _examYear;
+            set
+            {
+                int minYear = 2009;
+                int maxYear = DateTime.Now.Year;
+                if (value < minYear || value > maxYear)
+                    throw new Exception($"Год сдачи ЕГЭ должен быть между {minYear} и {maxYear}.");
+                _examYear = value;
+
+                if (_yearOfAdmission != 0 && (_yearOfAdmission < _examYear || _yearOfAdmission > _examYear + 4))
+                    _yearOfAdmission = _examYear;
+            }
+        }
+
+        private int _yearOfAdmission;
+        public int YearOfAdmission
+        {
+            get => _yearOfAdmission;
+            set
+            {
+                int minYear = _examYear;
+                int maxYear = _examYear + 4;
+                if (value < minYear || value > maxYear)
+                    throw new Exception($"Год поступления должен быть между {minYear} и {maxYear}.");
+                _yearOfAdmission = value;
+            }
+        }
+
+        private int _egeScore;
+        public int EgeScore
+        {
+            get => _egeScore;
+            set
+            {
+                if (value < 120 || value > 400)
+                    throw new Exception("Баллы ЕГЭ должны быть от 120 до 400.");
+                _egeScore = value;
+            }
+        }
+
+        public Abiturient()
+        {
+            ExamYear = DateTime.Now.Year; 
+            YearOfAdmission = ExamYear;  
+        }
+
+        public void SaveToFile(string folderPath)
+        {
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string filePath = Path.Combine(folderPath, $"{Login}.txt");
+
+            using (StreamWriter sw = new StreamWriter(filePath))
+            {
+                sw.WriteLine($"ФИО={FIO}");
+                sw.WriteLine($"Группа={Group}");
+                sw.WriteLine($"ГодСдачиЕГЭ={ExamYear}");
+                sw.WriteLine($"ГодПоступления={YearOfAdmission}");
+                sw.WriteLine($"БаллыЕГЭ={EgeScore}");
+                sw.WriteLine($"Пол={Gender}");
+                sw.WriteLine($"ДатаРождения={BirthDate:yyyy-MM-dd}");
+                sw.WriteLine($"Email={Email}");
+                sw.WriteLine($"Телефон={Phone}");
+                sw.WriteLine($"Логин={Login}");
+                sw.WriteLine($"Пароль={Password}");
+                sw.WriteLine($"КодАвторизации={AuthCode}");
+            }
+        }
+    }
+}
+
+//
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace NETFramework_cs_11_WF
+{
+    internal class NETFramework_cs_11_wWF
+    {
+        /// <summary>
+        /// Главная точка входа для приложения.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new NETFramework_cs_11_WF());
+        }
+    }
+}
