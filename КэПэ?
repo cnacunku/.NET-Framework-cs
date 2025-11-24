@@ -18,7 +18,7 @@ namespace Coursework_CS_WF
         {
             InitializeComponent();
 
-            // Двойная буферизация для панели
+            // Двойная буферизация для панели, чтобы не мерцало при передвижении вершины
             pnlGRAPH.GetType()
             .GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
             .SetValue(pnlGRAPH, true, null);
@@ -50,13 +50,7 @@ namespace Coursework_CS_WF
 
         const int NODE_RADIUS = 22;
 
-        private string GenerateNodeName()
-        {
-            int i = 1;
-            while (nodes.Any(n => n.Name == "x" + i))
-                i++;
-            return "x" + i;
-        }
+        
 
         private void btnAddNode_Click(object sender, EventArgs e)
         {
@@ -68,7 +62,7 @@ namespace Coursework_CS_WF
         {
             currentMode = Mode.AddEdge;
             firstNode = null;
-            txtMSG.Text = "Режим: Добавление связи. Выберите две вершины.";
+            txtMSG.Text = "Режим: Добавление связи. Выберите две вершины";
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -77,6 +71,7 @@ namespace Coursework_CS_WF
             txtMSG.Text = "Режим: Удаление вершин / рёбер";
         }
 
+        // Обработка действия на панели по активированому режиму
         private void pnlGRAPH_MouseDown(object sender, MouseEventArgs e)
         {
             Node clicked = FindNodeAtPoint(e.Location);
@@ -87,7 +82,6 @@ namespace Coursework_CS_WF
                     int x = Math.Max(NODE_RADIUS, Math.Min(e.X, pnlGRAPH.Width - NODE_RADIUS));
                     int y = Math.Max(NODE_RADIUS, Math.Min(e.Y, pnlGRAPH.Height - NODE_RADIUS));
 
-                    // Генерация уникального имени вершины
                     string name = GenerateNodeName();
 
                     nodes.Add(new Node
@@ -95,7 +89,7 @@ namespace Coursework_CS_WF
                         X = x,
                         Y = y,
                         Name = name,
-                        Color = Color.FromArgb(220, 187, 255) // цвет вершины
+                        Color = Color.FromArgb(220, 187, 255) // Цвет вершины
                     });
                     txtMSG.Text = $"Добавлена вершина {name}";
                     pnlGRAPH.Invalidate();
@@ -110,11 +104,10 @@ namespace Coursework_CS_WF
                     }
                     else
                     {
-                        // Проверка: нельзя соединять вершину с самой собой
                         if (clicked == firstNode)
                         {
                             txtMSG.Text = "Нельзя создать связь от вершины к самой себе!";
-                            firstNode = null; // сброс выбора
+                            firstNode = null;
                             return;
                         }
 
@@ -161,69 +154,7 @@ namespace Coursework_CS_WF
             }
         }
 
-        private Node FindNodeAtPoint(Point p)
-        {
-            foreach (var n in nodes)
-            {
-                double dx = p.X - n.X;
-                double dy = p.Y - n.Y;
-
-                if (Math.Sqrt(dx * dx + dy * dy) <= NODE_RADIUS)
-                    return n;
-            }
-            return null;
-        }
-
-        private Edge FindEdgeAtPoint(Point p)
-        {
-            const double tolerance = 9.0; // допустимое расстояние до линии
-            foreach (var edge in edges)
-            {
-                double dx = edge.To.X - edge.From.X;
-                double dy = edge.To.Y - edge.From.Y;
-                double length = Math.Sqrt(dx * dx + dy * dy);
-                if (length == 0) continue;
-
-                double t = ((p.X - edge.From.X) * dx + (p.Y - edge.From.Y) * dy) / (length * length);
-                t = Math.Max(0, Math.Min(1, t));
-                double closestX = edge.From.X + t * dx;
-                double closestY = edge.From.Y + t * dy;
-
-                double distance = Math.Sqrt((p.X - closestX) * (p.X - closestX) + (p.Y - closestY) * (p.Y - closestY));
-                if (distance <= tolerance) return edge;
-            }
-            return null;
-        }
-
-        private void DrawArrow(Graphics g, Node from, Node to)
-        {
-            float dx = to.X - from.X;
-            float dy = to.Y - from.Y;
-            float dist = (float)Math.Sqrt(dx * dx + dy * dy);
-
-            if (dist < 1) return;
-
-            float nx = dx / dist;
-            float ny = dy / dist;
-
-            float startX = from.X + nx * NODE_RADIUS;
-            float startY = from.Y + ny * NODE_RADIUS;
-
-            float endX = to.X - nx * NODE_RADIUS;
-            float endY = to.Y - ny * NODE_RADIUS;
-
-            using (Pen pen = new Pen(Color.Black, 3))
-            {
-                pen.EndCap = LineCap.Custom;
-
-                // Стрелка
-                AdjustableArrowCap arrow = new AdjustableArrowCap(6, 8); // (ширина, высота)
-                pen.CustomEndCap = arrow;
-
-                g.DrawLine(pen, startX, startY, endX, endY);
-            }
-        }
-
+        // Отрисовывает вершины и ребра
         private void pnlGRAPH_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -250,29 +181,27 @@ namespace Coursework_CS_WF
                     LineAlignment = StringAlignment.Center
                 };
 
-                g.DrawString(n.Name, new Font("Arial", 11, FontStyle.Bold),
-                             Brushes.Black,
-                             new RectangleF(n.X - NODE_RADIUS, n.Y - NODE_RADIUS,
-                                            NODE_RADIUS * 2, NODE_RADIUS * 2),
-                             sf);
+                g.DrawString(n.Name, new Font("Arial", 11, FontStyle.Bold),Brushes.Black, new RectangleF(n.X - NODE_RADIUS, n.Y - NODE_RADIUS,  NODE_RADIUS * 2, NODE_RADIUS * 2), sf);
             }
         }
 
+        // Режим перемещения вершин
         private void btnMove_Click(object sender, EventArgs e)
         {
             currentMode = Mode.Move;
             txtMSG.Text = "Режим: Перемещение вершин. Зажмите ЛКМ на вершине и двигайте.";
         }
 
+        // Ограничение, чтобы вершина не уходила за полотно
         private void pnlGRAPH_MouseMove(object sender, MouseEventArgs e)
         {
             if (currentMode == Mode.Move && isDragging && movingNode != null)
             {
-                // Ограничиваем координаты по X
+                // X
                 movingNode.X = Math.Max(NODE_RADIUS, e.X);                 // слева
                 movingNode.X = Math.Min(pnlGRAPH.Width - NODE_RADIUS, movingNode.X); // справа
 
-                // Ограничиваем координаты по Y
+                // Y
                 movingNode.Y = Math.Max(NODE_RADIUS, e.Y);                 // сверху
                 movingNode.Y = Math.Min(pnlGRAPH.Height - NODE_RADIUS, movingNode.Y); // снизу
 
@@ -280,27 +209,28 @@ namespace Coursework_CS_WF
             }
         }
 
+        // Завершение переноса
         private void pnlGRAPH_MouseUp(object sender, MouseEventArgs e)
         {
             isDragging = false;
             movingNode = null;
         }
 
+        // Сохранение в файл
         private void btnSave_Click(object sender, EventArgs e)
         {
-            string exePath = Application.StartupPath; // bin\Debug\netX.X
+            string exePath = Application.StartupPath;
             string projectPath = Directory.GetParent(exePath).Parent.Parent.FullName;
-            string folderPath = Path.Combine(projectPath, "Graphs"); // Graphs в корне проекта
+            string folderPath = Path.Combine(projectPath, "Graphs");
 
-            // Создаём папку, если её нет
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.InitialDirectory = folderPath;   // открываем именно эту папку
+            sfd.InitialDirectory = folderPath;
             sfd.Filter = "Text files|*.txt";
             sfd.DefaultExt = "txt";
-            sfd.FileName = "Graph.txt";          // можно предложить дефолтное имя
+            sfd.FileName = "Graph.txt";
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
@@ -319,6 +249,7 @@ namespace Coursework_CS_WF
             }
         }
 
+        // Загрузка графа из файла
         private void btnOpen_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -362,40 +293,112 @@ namespace Coursework_CS_WF
             }
         }
 
+        // Очистка полотна
         private void btnClear_Click(object sender, EventArgs e)
         {
-            nodes.Clear();  // удаляем все вершины
-            edges.Clear();  // удаляем все рёбра
-            firstNode = null; // сбрасываем выбранную вершину для добавления ребра
-            movingNode = null; // сброс перетаскивания
+            nodes.Clear();
+            edges.Clear();
+            firstNode = null;
+            movingNode = null;
             isDragging = false;
 
-            pnlGRAPH.Invalidate(); // перерисовываем панель
+            pnlGRAPH.Invalidate();
             txtMSG.Text = "Полотно очищено";
         }
 
+        // Открывает форму с гамильтоновымы цепямями/циклами
         private void btnFIND_Click(object sender, EventArgs e)
         {
-            // Проверяем, есть ли вершины
             if (nodes.Count == 0)
             {
                 MessageBox.Show("Сначала добавьте вершины и рёбра.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Создаём форму для гамильтоновых цепей/циклов и передаём списки
             HamiltonForm hForm = new HamiltonForm(nodes, edges);
 
-            // Показываем форму модально
             hForm.ShowDialog();
+        }
+
+        // Имя вершины
+        private string GenerateNodeName()
+        {
+            int i = 1;
+            while (nodes.Any(n => n.Name == "x" + i))
+                i++;
+            return "x" + i;
+        }
+
+        // Находит вершину графа по координатам щелчка
+        private Node FindNodeAtPoint(Point p)
+        {
+            foreach (var n in nodes)
+            {
+                double dx = p.X - n.X;
+                double dy = p.Y - n.Y;
+
+                if (Math.Sqrt(dx * dx + dy * dy) <= NODE_RADIUS)
+                    return n;
+            }
+            return null;
+        }
+
+        // Находит ребро графа рядом с указанной точки
+        private Edge FindEdgeAtPoint(Point p)
+        {
+            const double tolerance = 9.0; // допустимое расстояние до линии
+            foreach (var edge in edges)
+            {
+                double dx = edge.To.X - edge.From.X;
+                double dy = edge.To.Y - edge.From.Y;
+                double length = Math.Sqrt(dx * dx + dy * dy);
+                if (length == 0) continue;
+
+                double t = ((p.X - edge.From.X) * dx + (p.Y - edge.From.Y) * dy) / (length * length);
+                t = Math.Max(0, Math.Min(1, t));
+                double closestX = edge.From.X + t * dx;
+                double closestY = edge.From.Y + t * dy;
+
+                double distance = Math.Sqrt((p.X - closestX) * (p.X - closestX) + (p.Y - closestY) * (p.Y - closestY));
+                if (distance <= tolerance) return edge;
+            }
+            return null;
+        }
+
+        // Стрелки / связи / рёбра
+        private void DrawArrow(Graphics g, Node from, Node to)
+        {
+            float dx = to.X - from.X;
+            float dy = to.Y - from.Y;
+            float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+
+            if (dist < 1) return;
+
+            float nx = dx / dist;
+            float ny = dy / dist;
+
+            float startX = from.X + nx * NODE_RADIUS;
+            float startY = from.Y + ny * NODE_RADIUS;
+
+            float endX = to.X - nx * NODE_RADIUS;
+            float endY = to.Y - ny * NODE_RADIUS;
+
+            using (Pen pen = new Pen(Color.Black, 3))
+            {
+                pen.EndCap = LineCap.Custom;
+
+                // Стрелка
+                AdjustableArrowCap arrow = new AdjustableArrowCap(6, 8); // (ширина, высота)
+                pen.CustomEndCap = arrow;
+
+                g.DrawLine(pen, startX, startY, endX, endY);
+            }
         }
     }
 }
 
-
 //
 
-using Coursework_CS_WF;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -414,21 +417,60 @@ namespace Coursework_CS_WF
     {
         private List<Node> nodes;
         private List<Edge> edges;
+        private string[,] matrixM; // Матрица M 
+        private int[] next; // Указатели на следующую вершину
+        private int maxDegree; // Макс. степень вершины
 
         public HamiltonForm(List<Node> nodes, List<Edge> edges)
         {
             InitializeComponent();
             this.nodes = nodes;
             this.edges = edges;
-            FillMatrixM(HdgvMatrix);
-            AnalogueFill(HdgvMatrix);
-            FindHamiltonianPaths();
+            InitializeRobertsFlores();              // Подготовка данных для алгоритма Робертса-Флореса
+            FillMatrixM(HdgvMatrix);                // Визуализация матрицы М на DataGridView
+            AnalogueFill(HdgvMatrix);               // Выравнивание столбцов на весь DataGridView
+            FindHamiltonianPathsRobertsFlores();    // Создание списков, запуск алгоритма, вывод
         }
-
         private void HbtnClose_Click(object sender, EventArgs e)
         {
             this.Close();
         }
+
+        // Подготовка данных для алгоритма Робертса-Флореса
+        private void InitializeRobertsFlores()
+        {
+            if (nodes.Count == 0) return;
+
+            // Находим максимальное количество исходящих рёбер
+            maxDegree = nodes.Max(node => edges.Count(e => e.From == node));
+            if (maxDegree == 0) maxDegree = 1;
+
+            matrixM = new string[maxDegree, nodes.Count];
+            next = new int[nodes.Count];
+
+            for (int j = 0; j < nodes.Count; j++)
+            {
+                next[j] = 0;
+                var node = nodes[j];
+
+                // Получаем соседей
+                var outgoing = edges
+                    .Where(e => e.From == node)
+                    .Select(e => e.To.Name)
+                    .OrderBy(name => name)
+                    .ToList();
+
+                for (int i = 0; i < maxDegree; i++)
+                {
+                    if (i < outgoing.Count)
+                        matrixM[i, j] = outgoing[i];
+                    else
+                        matrixM[i, j] = "-";
+                }
+            }
+        }
+
+        // Визуализация на DataGridView
         private void FillMatrixM(DataGridView dgv)
         {
             dgv.Columns.Clear();
@@ -436,48 +478,109 @@ namespace Coursework_CS_WF
 
             int n = nodes.Count;
 
+            // Добавляем столбцы с именами вершин
             foreach (var node in nodes)
             {
                 dgv.Columns.Add(node.Name, node.Name);
                 dgv.Columns[dgv.Columns.Count - 1].SortMode = DataGridViewColumnSortMode.NotSortable;
             }
 
-            int maxConnections = nodes.Max(node => edges.Count(e => e.From == node));
-
-            for (int i = 0; i < maxConnections; i++)
+            // Добавляем строки по максимальной степени
+            for (int i = 0; i < maxDegree; i++)
                 dgv.Rows.Add();
 
+            // Заполняем матрицу
             for (int col = 0; col < n; col++)
             {
-                var node = nodes[col];
-                var outgoing = edges
-                    .Where(e => e.From == node)
-                    .Select(e => e.To.Name)
-                    .OrderBy(name => name)
-                    .ToList();
-
-                for (int row = 0; row < maxConnections; row++)
+                for (int row = 0; row < maxDegree; row++)
                 {
-                    dgv.Rows[row].Cells[col].Value = row < outgoing.Count ? outgoing[row] : "-";
+                    dgv.Rows[row].Cells[col].Value = matrixM[row, col];
                 }
             }
         }
 
-        private void FindHamiltonianPaths()
+        // Создание списков, запуск алгоритма, вывод
+        private void FindHamiltonianPathsRobertsFlores()
         {
             List<List<Node>> paths = new List<List<Node>>();
             List<List<Node>> cycles = new List<List<Node>>();
 
             if (nodes.Count == 0) return;
 
-            List<Node> currentPath = new List<Node>();
-            HashSet<Node> visited = new HashSet<Node>();
-            Node start = nodes[0];
-            currentPath.Add(start);
-            visited.Add(start);
-            DFS(start, start, currentPath, visited, paths, cycles);
+            RobertsFloresAlgorithm(paths, cycles);
 
+            DisplayResults(paths, cycles);
+        }
+
+        // Основной алогритм Робертса и Флореса
+        private void RobertsFloresAlgorithm(List<List<Node>> paths, List<List<Node>> cycles)
+        {
+            if (nodes.Count == 0) return;
+
+            // Шаг 1: Выбор начальной вершины X1 (по методичке)
+            Node startNode = nodes[0];
+
+            // Шаг 2: Инициализация стека для хранения текущего пути
+            Stack<Node> stack = new Stack<Node>();
+
+            // Шаг 3: Массив посещенных вершин (отметка о включении в цепь)
+            bool[] visited = new bool[nodes.Count];
+
+            // Обход в глубину
+            void DFS(Node current)
+            {
+                // Шаг 4: Помещение текущей вершины в стек и отметка как посещенной
+                stack.Push(current);
+                visited[nodes.IndexOf(current)] = true;
+
+                // Шаг 5: Проверка условия завершения цепи (все вершины посещены)
+                if (stack.Count == nodes.Count)
+                {
+                    // Найдена гамильтонова цепь - сохраняем путь
+                    paths.Add(stack.Reverse().ToList());
+
+                    // Шаг 6: Проверка на гамильтонов цикл
+                    if (HasEdge(current, startNode))
+                    {
+                        var cycle = stack.Reverse().ToList();
+                        cycle.Add(startNode);
+                        cycles.Add(cycle);
+                    }
+                }
+                else
+                {
+                    // Шаг 7: Получаем индекс текущей вершины для доступа к столбцу матрицы M
+                    int colIndex = nodes.IndexOf(current);
+
+                    // Шаг 8: Перебор всех возможных следующих вершин из матрицы M
+                    for (int i = 0; i < maxDegree; i++)
+                    {
+                        string candidateName = matrixM[i, colIndex];
+                        if (candidateName == "-") break;
+
+                        Node candidate = nodes.FirstOrDefault(n => n.Name == candidateName);
+
+                        // Шаг 9: Проверка условия включения вершины в цепь
+                        if (candidate != null && !visited[nodes.IndexOf(candidate)])
+                        {
+                            DFS(candidate);
+                        }
+                    }
+                }
+                // Шаг 10: Ворзврат, снимаем отметку и удаляем вершину из стека
+                visited[nodes.IndexOf(current)] = false;
+                stack.Pop();
+            }
+            // Шаг 11: Запуск алгоритма с начальной вершины X1
+            DFS(startNode);  
+        }
+
+        // Вывод
+        private void DisplayResults(List<List<Node>> paths, List<List<Node>> cycles)
+        {
             HtxtMSG.Clear();
+
+
             HtxtMSG.AppendText("Гамильтоновы цепи:\r\n");
             int idx = 1;
             foreach (var path in paths)
@@ -486,6 +589,9 @@ namespace Coursework_CS_WF
                 idx++;
             }
 
+            if (paths.Count == 0)
+                HtxtMSG.AppendText("Гамильтоновы цепи не найдены\r\n");
+
             HtxtMSG.AppendText("\r\nГамильтоновы циклы:\r\n");
             idx = 1;
             foreach (var cycle in cycles)
@@ -493,39 +599,18 @@ namespace Coursework_CS_WF
                 HtxtMSG.AppendText($"S'{idx} = {{ {string.Join(", ", cycle.Select(n => n.Name))} }}\r\n");
                 idx++;
             }
+
+            if (cycles.Count == 0)
+                HtxtMSG.AppendText("Гамильтоновы циклы не найдены\r\n");
         }
 
-        private void DFS(Node current, Node start, List<Node> path, HashSet<Node> visited, List<List<Node>> paths, List<List<Node>> cycles)
+        // Проверка на существование связи
+        private bool HasEdge(Node fromNode, Node toNode)
         {
-            if (visited.Count == nodes.Count)
-            {
-                paths.Add(new List<Node>(path));
-
-                if (edges.Any(e => e.From == current && e.To == start))
-                {
-                    List<Node> cycle = new List<Node>(path);
-                    cycle.Add(start);
-                    cycles.Add(cycle);
-                }
-                return;
-            }
-
-            var nextNodes = edges
-                .Where(e => e.From == current)
-                .Select(e => e.To)
-                .Where(n => !visited.Contains(n))
-                .OrderBy(n => n.Name);
-
-            foreach (var next in nextNodes)
-            {
-                path.Add(next);
-                visited.Add(next);
-                DFS(next, start, path, visited, paths, cycles);
-                visited.Remove(next);
-                path.RemoveAt(path.Count - 1);
-            }
+            return edges.Any(e => e.From == fromNode && e.To == toNode);
         }
 
+        // Выравнивание столбцов на весь DataGridView
         private void AnalogueFill(DataGridView dgv)
         {
             int colCount = dgv.Columns.Count;
@@ -545,9 +630,34 @@ namespace Coursework_CS_WF
             }
             else
             {
-                dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells; // Скрол
+                dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
                 dgv.ScrollBars = ScrollBars.Both;
             }
+        }
+    }
+}
+
+//
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Coursework_CS_WF
+{
+    internal class Coursework_CS_wWF
+    {
+        /// <summary>
+        /// Главная точка входа для приложения.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Coursework_CS_WF());
         }
     }
 }
