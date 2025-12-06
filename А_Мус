@@ -1,0 +1,48 @@
+private void RobertsFloresAlgorithm(List<List<Node>> paths, List<List<Node>> cycles)
+{
+    if (nodes.Count == 0) return;
+
+    Node startNode = nodes[0];
+
+    Stack<Node> stack = new Stack<Node>();
+
+    bool[] visited = new bool[nodes.Count];
+
+    void DFS(Node current)
+    {
+        stack.Push(current);
+        visited[nodes.IndexOf(current)] = true;
+
+        if (stack.Count == nodes.Count)
+        {
+            paths.Add(stack.Reverse().ToList());
+
+            if (HasEdge(current, startNode))
+            {
+                var cycle = stack.Reverse().ToList();
+                cycle.Add(startNode);
+                cycles.Add(cycle);
+            }
+        }
+        else
+        {
+            int colIndex = nodes.IndexOf(current);
+
+            for (int i = 0; i < maxDegree; i++)
+            {
+                string candidateName = matrixM[i, colIndex];
+                if (candidateName == "-") break;
+
+                Node candidate = nodes.FirstOrDefault(n => n.Name == candidateName);
+
+                if (candidate != null && !visited[nodes.IndexOf(candidate)])
+                {
+                    DFS(candidate);
+                }
+            }
+        }
+        visited[nodes.IndexOf(current)] = false;
+        stack.Pop();
+    }
+    DFS(startNode);  
+}
