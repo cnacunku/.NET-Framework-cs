@@ -1,0 +1,143 @@
+/* SQL Manager for MySQL                              5.8.0.53936 */
+/* -------------------------------------------------------------- */
+/* Host     : localhost                                           */
+/* Port     : 3306                                                */
+/* Database : VidachaPorucheniu                                   */
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES 'utf8mb4' */;
+
+SET FOREIGN_KEY_CHECKS=0;
+
+CREATE DATABASE `VidachaPorucheniu`
+    CHARACTER SET 'utf8'
+    COLLATE 'utf8_general_ci';
+
+USE `vidachaporucheniu`;
+
+/* Структура для таблицы `подразделение`:  */
+
+CREATE TABLE `подразделение` (
+  `iD_под` BIGINT NOT NULL,
+  `Название` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Местоположение` VARCHAR(80) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Телефон` BIGINT DEFAULT NULL,
+  PRIMARY KEY USING BTREE (`iD_под`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `исполнитель`:  */
+
+CREATE TABLE `исполнитель` (
+  `iD_исп` BIGINT NOT NULL,
+  `Фамилия` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Имя` VARCHAR(20) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Отчество` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Должность` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Телефон` BIGINT DEFAULT NULL,
+  `email` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `iD_под` BIGINT NOT NULL,
+  PRIMARY KEY USING BTREE (`iD_исп`),
+  KEY `IX_Relationship2` USING BTREE (`iD_под`),
+  CONSTRAINT `Relationship2` FOREIGN KEY (`iD_под`) REFERENCES `подразделение` (`iD_под`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `руководитель`:  */
+
+CREATE TABLE `руководитель` (
+  `iD_рук` BIGINT NOT NULL,
+  `Фамилия` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Имя` VARCHAR(20) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Отчество` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Должность` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Телефон` BIGINT DEFAULT NULL,
+  `email` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `iD_под` BIGINT NOT NULL,
+  PRIMARY KEY USING BTREE (`iD_рук`),
+  KEY `IX_Relationship1` USING BTREE (`iD_под`),
+  CONSTRAINT `Relationship1` FOREIGN KEY (`iD_под`) REFERENCES `подразделение` (`iD_под`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `категория`:  */
+
+CREATE TABLE `категория` (
+  `iD_кат` BIGINT NOT NULL,
+  `Название` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Описание` TEXT COLLATE utf8mb4_0900_ai_ci,
+  PRIMARY KEY USING BTREE (`iD_кат`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `статус`:  */
+
+CREATE TABLE `статус` (
+  `iD_статус` BIGINT NOT NULL,
+  `Название` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Описание` TEXT COLLATE utf8mb4_0900_ai_ci,
+  PRIMARY KEY USING BTREE (`iD_статус`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `приоритет`:  */
+
+CREATE TABLE `приоритет` (
+  `iD_приор` BIGINT NOT NULL,
+  `Название` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Описание` TEXT COLLATE utf8mb4_0900_ai_ci,
+  PRIMARY KEY USING BTREE (`iD_приор`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `поручение`:  */
+
+CREATE TABLE `поручение` (
+  `iD_пор` BIGINT NOT NULL,
+  `Название поручения` VARCHAR(30) COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `Содержание` TEXT COLLATE utf8mb4_0900_ai_ci,
+  `Дата выдачи` DATE DEFAULT NULL,
+  `Срок исполнения` DATETIME DEFAULT NULL,
+  `Дата фактического исполнения` DATE DEFAULT NULL,
+  `iD_рук` BIGINT NOT NULL,
+  `iD_кат` BIGINT NOT NULL,
+  `iD_статус` BIGINT NOT NULL,
+  `iD_приор` BIGINT NOT NULL,
+  PRIMARY KEY USING BTREE (`iD_пор`),
+  KEY `IX_Relationship3` USING BTREE (`iD_рук`),
+  KEY `IX_Relationship6` USING BTREE (`iD_кат`),
+  KEY `IX_Relationship7` USING BTREE (`iD_статус`),
+  KEY `IX_Relationship8` USING BTREE (`iD_приор`),
+  CONSTRAINT `Relationship3` FOREIGN KEY (`iD_рук`) REFERENCES `руководитель` (`iD_рук`),
+  CONSTRAINT `Relationship6` FOREIGN KEY (`iD_кат`) REFERENCES `категория` (`iD_кат`),
+  CONSTRAINT `Relationship7` FOREIGN KEY (`iD_статус`) REFERENCES `статус` (`iD_статус`),
+  CONSTRAINT `Relationship8` FOREIGN KEY (`iD_приор`) REFERENCES `приоритет` (`iD_приор`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/* Структура для таблицы `исполнитель_поручение`:  */
+
+CREATE TABLE `исполнитель_поручение` (
+  `iD_исп` BIGINT NOT NULL,
+  `iD_пор` BIGINT NOT NULL,
+  PRIMARY KEY USING BTREE (`iD_исп`, `iD_пор`),
+  KEY `FK_Исполнитель_Поручение_Поручение` USING BTREE (`iD_пор`),
+  CONSTRAINT `FK_Исполнитель_Поручение_Исполнитель` FOREIGN KEY (`iD_исп`) REFERENCES `исполнитель` (`iD_исп`),
+  CONSTRAINT `FK_Исполнитель_Поручение_Поручение` FOREIGN KEY (`iD_пор`) REFERENCES `поручение` (`iD_пор`)
+) ENGINE=InnoDB
+ROW_FORMAT=DYNAMIC CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_0900_ai_ci'
+;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
