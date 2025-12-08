@@ -1,0 +1,152 @@
+DROP TABLE IF EXISTS Промежуточные;
+DROP TABLE IF EXISTS Рекорд;
+DROP TABLE IF EXISTS Соревнование;
+DROP TABLE IF EXISTS Команда;
+DROP TABLE IF EXISTS Спортсмен;
+DROP TABLE IF EXISTS Дисциплина;
+DROP TABLE IF EXISTS `Единица измерения`;
+DROP TABLE IF EXISTS `Вид спорта`;
+DROP TABLE IF EXISTS Уровень;
+DROP TABLE IF EXISTS Страна;
+
+-- Create tables section -------------------------------------------------
+
+-- Table Спортсмен
+CREATE TABLE Спортсмен (
+  ID_спортсмен BIGINT NOT NULL AUTO_INCREMENT,
+  Фамилия VARCHAR(50) NULL,
+  Имя VARCHAR(50) NULL,
+  Отчество VARCHAR(50) NULL,
+  `Дата рождения` DATE NULL,
+  Пол VARCHAR(10) NULL,
+  Звание VARCHAR(50) NULL,
+  PRIMARY KEY (ID_спортсмен)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Страна
+CREATE TABLE Страна (
+  ID_стр BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(100) NULL,
+  Код VARCHAR(10) NULL,
+  PRIMARY KEY (ID_стр)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Команда
+CREATE TABLE Команда (
+  ID_ком BIGINT NOT NULL AUTO_INCREMENT,
+  `Кол-во человек` INT NULL,
+  Название VARCHAR(100) NULL,
+  ID_стр BIGINT NOT NULL,
+  PRIMARY KEY (ID_ком),
+  INDEX IX_Relationship10 (ID_стр),
+  CONSTRAINT Relationship10 FOREIGN KEY (ID_стр)
+    REFERENCES Страна (ID_стр)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Дисциплина
+CREATE TABLE Дисциплина (
+  ID_дис BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(100) NULL,
+  Описание TEXT NULL,
+  PRIMARY KEY (ID_дис)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Единица измерения
+CREATE TABLE `Единица измерения` (
+  ID_измер BIGINT NOT NULL AUTO_INCREMENT,
+  Значение VARCHAR(50) NULL,
+  PRIMARY KEY (ID_измер)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Вид спорта
+CREATE TABLE `Вид спорта` (
+  ID_вид BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(100) NULL,
+  Описание TEXT NULL,
+  PRIMARY KEY (ID_вид)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Уровень
+CREATE TABLE Уровень (
+  ID_ур BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(50) NULL,
+  PRIMARY KEY (ID_ур)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Соревнование
+CREATE TABLE Соревнование (
+  ID_сор BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(200) NULL,
+  `Дата начала` DATE NULL,
+  `Дата окончания` DATE NULL,
+  Город VARCHAR(100) NULL,
+  ID_ур BIGINT NOT NULL,
+  ID_стр BIGINT NOT NULL,
+  PRIMARY KEY (ID_сор),
+  INDEX IX_Relationship8 (ID_ур),
+  INDEX IX_Relationship9 (ID_стр),
+  CONSTRAINT Relationship8 FOREIGN KEY (ID_ур)
+    REFERENCES Уровень (ID_ур)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship9 FOREIGN KEY (ID_стр)
+    REFERENCES Страна (ID_стр)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Рекорд
+CREATE TABLE Рекорд (
+  ID_рек BIGINT NOT NULL AUTO_INCREMENT,
+  Название VARCHAR(200) NULL,
+  Результат DECIMAL(10,2) NULL,
+  ID_спортсмен BIGINT NOT NULL,
+  ID_дис BIGINT NOT NULL,
+  ID_измер BIGINT NOT NULL,
+  ID_вид BIGINT NOT NULL,
+  ID_сор BIGINT NOT NULL,
+  PRIMARY KEY (ID_рек),
+  INDEX IX_Relationship3 (ID_спортсмен),
+  INDEX IX_Relationship4 (ID_дис),
+  INDEX IX_Relationship5 (ID_измер),
+  INDEX IX_Relationship6 (ID_вид),
+  INDEX IX_Relationship7 (ID_сор),
+  CONSTRAINT Relationship3 FOREIGN KEY (ID_спортсмен)
+    REFERENCES Спортсмен (ID_спортсмен)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship4 FOREIGN KEY (ID_дис)
+    REFERENCES Дисциплина (ID_дис)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship5 FOREIGN KEY (ID_измер)
+    REFERENCES `Единица измерения` (ID_измер)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship6 FOREIGN KEY (ID_вид)
+    REFERENCES `Вид спорта` (ID_вид)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship7 FOREIGN KEY (ID_сор)
+    REFERENCES Соревнование (ID_сор)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table Промежуточные
+CREATE TABLE Промежуточные (
+  ID_ком BIGINT NOT NULL,
+  ID_спортсмен BIGINT NOT NULL,
+  INDEX IX_Relationship1 (ID_ком),
+  INDEX IX_Relationship2 (ID_спортсмен),
+  CONSTRAINT Relationship1 FOREIGN KEY (ID_ком)
+    REFERENCES Команда (ID_ком)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION,
+  CONSTRAINT Relationship2 FOREIGN KEY (ID_спортсмен)
+    REFERENCES Спортсмен (ID_спортсмен)
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
