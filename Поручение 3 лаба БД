@@ -1,0 +1,200 @@
+/*
+Created: 05.11.2025
+Modified: 05.11.2025
+Model: Выдача Поручений
+Database: MS SQL Server 2019
+*/
+
+
+-- Create tables section -------------------------------------------------
+
+-- Table Поручение
+
+CREATE TABLE [Поручение]
+(
+ [iD_пор] Bigint NOT NULL,
+ [Название поручения] Varchar(30) NULL,
+ [Содержание] Text NULL,
+ [Дата выдачи] Date NULL,
+ [Срок исполнения] Datetime NULL,
+ [Дата фактического исполнения] Date NULL,
+ [iD_рук] Bigint NOT NULL,
+ [iD_кат] Bigint NOT NULL,
+ [iD_статус] Bigint NOT NULL,
+ [iD_приор] Bigint NOT NULL
+)
+go
+
+-- Create indexes for table Поручение
+
+CREATE INDEX [IX_Relationship3] ON [Поручение] ([iD_рук])
+go
+
+CREATE INDEX [IX_Relationship6] ON [Поручение] ([iD_кат])
+go
+
+CREATE INDEX [IX_Relationship7] ON [Поручение] ([iD_статус])
+go
+
+CREATE INDEX [IX_Relationship8] ON [Поручение] ([iD_приор])
+go
+
+-- Add keys for table Поручение
+
+ALTER TABLE [Поручение] ADD CONSTRAINT [iD_Поручения] PRIMARY KEY ([iD_пор])
+go
+
+-- Table Категория
+
+CREATE TABLE [Категория]
+(
+ [iD_кат] Bigint NOT NULL,
+ [Название] Varchar(30) NULL,
+ [Описание] Text NULL
+)
+go
+
+-- Add keys for table Категория
+
+ALTER TABLE [Категория] ADD CONSTRAINT [iD_Категории] PRIMARY KEY ([iD_кат])
+go
+
+-- Table Статус
+
+CREATE TABLE [Статус]
+(
+ [iD_статус] Bigint NOT NULL,
+ [Название] Varchar(30) NULL,
+ [Описание] Text NULL
+)
+go
+
+-- Add keys for table Статус
+
+ALTER TABLE [Статус] ADD CONSTRAINT [iD_Статус] PRIMARY KEY ([iD_статус])
+go
+
+-- Table Приоритет
+
+CREATE TABLE [Приоритет]
+(
+ [iD_приор] Bigint NOT NULL,
+ [Название] Varchar(30) NULL,
+ [Описание] Text NULL
+)
+go
+
+-- Add keys for table Приоритет
+
+ALTER TABLE [Приоритет] ADD CONSTRAINT [iD_Приоритета] PRIMARY KEY ([iD_приор])
+go
+
+-- Table Руководитель
+
+CREATE TABLE [Руководитель]
+(
+ [iD_рук] Bigint NOT NULL,
+ [Фамилия] Varchar(30) NULL,
+ [Имя] Varchar(20) NULL,
+ [Отчество] Varchar(30) NULL,
+ [Должность] Varchar(30) NULL,
+ [Телефон] Bigint NULL,
+ [email] Varchar(30) NULL,
+ [iD_под] Bigint NOT NULL
+)
+go
+
+-- Create indexes for table Руководитель
+
+CREATE INDEX [IX_Relationship1] ON [Руководитель] ([iD_под])
+go
+
+-- Add keys for table Руководитель
+
+ALTER TABLE [Руководитель] ADD CONSTRAINT [iD_Руководителя] PRIMARY KEY ([iD_рук])
+go
+
+-- Table Исполнитель
+
+CREATE TABLE [Исполнитель]
+(
+ [iD_исп] Bigint NOT NULL,
+ [Фамилия] Varchar(30) NULL,
+ [Имя] Varchar(20) NULL,
+ [Отчество] Varchar(30) NULL,
+ [Должность] Varchar(30) NULL,
+ [Телефон] Bigint NULL,
+ [email] Varchar(30) NULL,
+ [iD_под] Bigint NOT NULL
+)
+go
+
+-- Create indexes for table Исполнитель
+
+CREATE INDEX [IX_Relationship2] ON [Исполнитель] ([iD_под])
+go
+
+-- Add keys for table Исполнитель
+
+ALTER TABLE [Исполнитель] ADD CONSTRAINT [iD_Исполнителя] PRIMARY KEY ([iD_исп])
+go
+
+-- Table Подразделение
+
+CREATE TABLE [Подразделение]
+(
+ [iD_под] Bigint NOT NULL,
+ [Название] Varchar(30) NULL,
+ [Местоположение] Varchar(80) NULL,
+ [Телефон] Bigint NULL
+)
+go
+
+-- Add keys for table Подразделение
+
+ALTER TABLE [Подразделение] ADD CONSTRAINT [iD_Подразделения] PRIMARY KEY ([iD_под])
+go
+
+-- Table Исполнитель_Поручение
+
+CREATE TABLE [Исполнитель_Поручение]
+(
+ [iD_исп] Bigint NOT NULL,
+ [iD_пор] Bigint NOT NULL
+)
+go
+
+-- Create foreign keys (relationships) section ------------------------------------------------- 
+
+
+ALTER TABLE [Руководитель] ADD CONSTRAINT [Relationship1] FOREIGN KEY ([iD_под]) REFERENCES [Подразделение] ([iD_под]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+ALTER TABLE [Исполнитель] ADD CONSTRAINT [Relationship2] FOREIGN KEY ([iD_под]) REFERENCES [Подразделение] ([iD_под]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+ALTER TABLE [Поручение] ADD CONSTRAINT [Relationship3] FOREIGN KEY ([iD_рук]) REFERENCES [Руководитель] ([iD_рук]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+ALTER TABLE [Поручение] ADD CONSTRAINT [Relationship6] FOREIGN KEY ([iD_кат]) REFERENCES [Категория] ([iD_кат]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+ALTER TABLE [Поручение] ADD CONSTRAINT [Relationship7] FOREIGN KEY ([iD_статус]) REFERENCES [Статус] ([iD_статус]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+ALTER TABLE [Поручение] ADD CONSTRAINT [Relationship8] FOREIGN KEY ([iD_приор]) REFERENCES [Приоритет] ([iD_приор]) ON UPDATE NO ACTION ON DELETE NO ACTION
+go
+
+
+
+
