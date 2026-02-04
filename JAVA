@@ -1,0 +1,44 @@
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.awt.*;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class Main {
+    public static void Figure(int h) {
+        int count;
+
+        if (h % 2 == 1)
+            count = (h+1)/2;
+        else
+            count = h/2;
+
+        int spaces=1;
+
+        if (h%2==1){
+            for (int i=0; i<count;i++){
+                System.out.print("\\ ");
+            }
+            count--;
+            System.out.println();
+        }
+        while (count>0){
+            for (int r=0; r<2;r++) {
+                for (int s =0; s<spaces;s++)
+                    System.out.print(" ");
+                for (int i = 0; i < count; i++) {
+                    System.out.print("\\ ");
+                }
+                System.out.println();
+                spaces++;
+            }
+        count--;
+        }
+    }
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int h =scanner.nextInt();
+
+        Figure(h);
+    }
+}
