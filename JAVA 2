@@ -1,0 +1,45 @@
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.awt.*;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Введите x (-1 < x < 1): ");
+        double x = scanner.nextDouble();
+
+        System.out.print("Введите n: ");
+        int n = scanner.nextInt();
+
+        System.out.print("Введите e: ");
+        double e = scanner.nextDouble();
+
+        double sum_n = 0, sum_e = 0, sum_e10 = 0, a_prev = 1;
+
+        for (int i = 0; i < n; i++) {
+            double a_n;
+            if (i == 0)
+                a_n = a_prev;
+            else {
+                a_n = a_prev * x;
+                a_prev = a_n;
+            }
+            sum_n += a_n;
+
+            if (Math.abs(a_n) > e)
+                sum_e += a_n;
+            if (Math.abs(a_n) > e / 10)
+                sum_e10 += a_n;
+        }
+        double res = 1 / (1 - x);
+
+        System.out.println();
+        System.out.println("Сумма первых n слагаемых: " + sum_n);
+        System.out.println("Сумма слагаемых > e: " + sum_e);
+        System.out.println("Сумма слагаемых > e/10: " + sum_e10);
+        System.out.println("Точное значение функции: " + res);
+
+    }
+}
