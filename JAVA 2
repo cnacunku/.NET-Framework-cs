@@ -7,8 +7,18 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите x (-1 < x < 1): ");
-        double x = scanner.nextDouble();
+
+        double x;
+        while (true) {
+            System.out.print("Введите x (-1 < x < 1): ");
+            x = scanner.nextDouble();
+
+            if (Math.abs(x) < 1) {
+                break;
+            } else {
+                System.out.println("Ошибка: x должен находиться в пределах -1 < x < 1");
+            }
+        }
 
         System.out.print("Введите n: ");
         int n = scanner.nextInt();
