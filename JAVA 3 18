@@ -1,0 +1,105 @@
+//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
+// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.awt.*;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        // 1. Прогон тестов
+        Test_18();
+
+        // 2. Работа с аргументами командной строки
+        if (args.length > 0) {
+            int[] arr = new int[args.length];
+            for (int i = 0; i < args.length; i++) {
+                arr[i] = Integer.parseInt(args[i]);
+            }
+
+            System.out.println("Массив из аргументов:");
+            printArray(arr);
+            System.out.println("Сумма = " + Solution_18(arr));
+        }
+
+        // 3. Ручной ввод
+        Scanner sc = new Scanner(System.in);
+        int[] arr = inputArray(sc);
+
+        System.out.println("Введённый массив:");
+        printArray(arr);
+        System.out.println("Сумма = " + Solution_18(arr));
+    }
+
+    static int[] inputArray(Scanner sc) {
+        System.out.print("Введите размер массива: ");
+        int n = sc.nextInt();
+
+        int[] arr = new int[n];
+        System.out.print("Введите элементы:");
+
+        for (int i = 0; i < n; i++) {
+            arr[i] = sc.nextInt();
+        }
+
+        return arr;
+    }
+
+    static void printArray(int[] arr) {
+        System.out.print("[ ");
+        for (int x : arr) {
+            System.out.print(x + " ");
+        }
+        System.out.println("]");
+    }
+
+    static long Solution_18(int[] arr) {
+        long sum = 0;
+
+        for (int x : arr) {
+            if (isFactorial_18(x)) {
+                sum += x;
+            }
+        }
+
+        return sum;
+    }
+
+    static boolean isFactorial_18(int x) {
+        if (x <= 0) return false;
+
+        int i = 1;
+        while (x % i == 0) {
+            x /= i;
+            i++;
+        }
+        return x == 1;
+    }
+
+
+
+    static void Test_18() {
+        int[][] tests = {
+                {},                                                   // Пустой массив
+                {1},                                                  // 1!
+                {0, 1, 2, 3, 4, 5, 6},                                // Числа от 1 до 6
+                {-1, -2, -3},                                         // Отрицательные числа
+                {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880},      // Факториалы от 1! до 9!
+                {40320, 40320, 40320},                                // Повторяющиеся факториалы
+                {25, 26, 119, 121, 720, 721},                         // Числа рядом с факториалами
+                {0, 0, 0, 0},                                         // Нули
+                {1, 1, 1, 1},                                         // Единицы
+                {39916800, 479001600 }                                // 11! и 12!
+        };
+
+        for (int i = 0; i < tests.length; i++) {
+            System.out.print("Тест " + (i + 1) + ": ");
+            printArray(tests[i]);
+
+            long result = Solution_18(tests[i]);
+
+            System.out.println("Сумма элементов, которые являются факториалом какого-либо числа = " + result);
+            System.out.println();
+
+        }
+    }
+}
