@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void Figure(int h) {
+
         int count;
 
         if (h % 2 == 1)
@@ -32,12 +33,27 @@ public class Main {
                 System.out.println();
                 spaces++;
             }
-        count--;
+            count--;
         }
     }
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        int h =scanner.nextInt();
+        int h;
+
+        while (true) {
+            System.out.print("Введите высоту фигуры (целое число >= 1): ");
+            if (scanner.hasNextInt()) {
+                h = scanner.nextInt();
+                if (h >= 1) {
+                    break;
+                } else {
+                    System.out.println("Ошибка: число должно быть >= 1.");
+                }
+            } else {
+                System.out.println("Ошибка: введено не целое число.");
+                scanner.next();
+            }
+        }
 
         Figure(h);
     }
