@@ -1,0 +1,715 @@
+Чтож, давай скину тебе весь мой код, после чего перейдем к созданию интерфейса для обоих заданий. Напомню, что интерфейс я буду делать в scene builder, открывая его через fxml файл в Intelij idea. Мой код далее, src.console.ConsoleApp.java: "package console;
+
+import utils.MatrixUtils;
+
+import java.io.IOException;
+import java.util.Scanner;
+
+public class ConsoleApp {
+
+    private Scanner scanner;
+
+    public ConsoleApp() {
+        this.scanner = new Scanner(System.in);
+    }
+
+    // Для вызова из Main
+    public void runInteractiveMenu(Scanner sc) {
+        this.scanner = sc;
+        runMenu();
+    }
+
+    private void runMenu() {
+        while (true) {
+            printMainMenu();
+            int choice = safeNextInt(scanner);
+
+            switch (choice) {
+                case 1:
+                    runSpiralMenu();
+                    break;
+                case 2:
+                    runMaxRectangleMenu();
+                    break;
+                case 0:
+                    System.out.println("Выход из программы...");
+                    return;
+                default:
+                    System.out.println("Неверный выбор. Попробуйте снова.");
+            }
+        }
+    }
+
+    private void printMainMenu() {
+        System.out.println("\n=== ГЛАВНОЕ МЕНЮ ===");
+        System.out.println("1. Задание 18 — Проверка спирали (int матрица)");
+        System.out.println("2. Задание 19 — Максимальный прямоугольник (boolean матрица)");
+        System.out.println("0. Выход");
+        System.out.print("Выберите пункт: ");
+    }
+    
+    // Задание 18 - спираль
+    private void runSpiralMenu() {
+        int[][] matrix = null;
+
+        while (true) {
+            System.out.println("\n--- Задание 18: Спираль ---");
+            System.out.println("1. Ввести матрицу вручную");
+            System.out.println("2. Загрузить матрицу из файла");
+            System.out.println("0. Назад");
+            System.out.print("Выберите действие: ");
+
+            int choice = safeNextInt(scanner);
+
+            switch (choice) {
+                case 1:
+                    matrix = inputIntMatrixManual();
+                    checkAndShowSpiral(matrix); // сразу выполняем проверку
+                    break;
+                case 2:
+                    matrix = loadIntMatrixFromFile();
+                    if (matrix != null) {
+                        checkAndShowSpiral(matrix);
+                    }
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неверный выбор.");
+            }
+        }
+    }
+
+    private void checkAndShowSpiral(int[][] matrix) {
+        boolean result = MatrixUtils.isSpiralOrdered(matrix);
+        System.out.println("Результат: " + (result ? "Да, матрица упорядочена по спирали" : "Нет"));
+        saveBooleanResultToFile(result);
+    }
+
+    // Задание 19 - максимальный прямоугольник
+    private void runMaxRectangleMenu() {
+        boolean[][] matrix = null;
+
+        while (true) {
+            System.out.println("\n--- Задание 19: Максимальный прямоугольник ---");
+            System.out.println("1. Ввести матрицу вручную (0/1)");
+            System.out.println("2. Загрузить матрицу из файла (0/1)");
+            System.out.println("0. Назад");
+            System.out.print("Выберите действие: ");
+
+            int choice = safeNextInt(scanner);
+
+            switch (choice) {
+                case 1:
+                    matrix = inputBoolMatrixManual();
+                    checkAndShowRectangle(matrix);
+                    break;
+                case 2:
+                    matrix = loadBoolMatrixFromFile();
+                    if (matrix != null) {
+                        checkAndShowRectangle(matrix);
+                    }
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Неверный выбор.");
+            }
+        }
+    }
+
+    private void checkAndShowRectangle(boolean[][] matrix) {
+        int[] rect = MatrixUtils.findMaxTrueRectangle(matrix);
+        System.out.printf("Результат: верх-лево = (%d,%d), высота = %d, ширина = %d%n",
+                rect[0], rect[1], rect[2], rect[3]);
+        saveRectangleResultToFile(rect);
+    }
+
+    // Ввод матриц вручную
+    private int[][] inputIntMatrixManual() {
+        System.out.print("Количество строк: ");
+        int rows = safeNextInt(scanner);
+        System.out.print("Количество столбцов: ");
+        int cols = safeNextInt(scanner);
+
+        int[][] mat = new int[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            while (true) {
+                System.out.print("Строка " + (i + 1) + " (через пробел): ");
+                String line = scanner.nextLine().trim();
+                String[] parts = line.split("\\s+");
+                if (parts.length != cols) {
+                    System.out.println("Неверное количество элементов. Повторите.");
+                    continue;
+                }
+                try {
+                    for (int j = 0; j < cols; j++) {
+                        mat[i][j] = Integer.parseInt(parts[j]);
+                    }
+                    break;
+                } catch (NumberFormatException e) {
+                    System.out.println("Ошибка числа. Повторите строку.");
+                }
+            }
+        }
+
+        return mat;
+    }
+
+    private boolean[][] inputBoolMatrixManual() {
+        System.out.print("Количество строк: ");
+        int rows = safeNextInt(scanner);
+        System.out.print("Количество столбцов: ");
+        int cols = safeNextInt(scanner);
+
+        boolean[][] mat = new boolean[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            while (true) {
+                System.out.print("Строка " + (i + 1) + " (0/1 через пробел): ");
+                String line = scanner.nextLine().trim();
+                String[] parts = line.split("\\s+");
+                if (parts.length != cols) {
+                    System.out.println("Неверное количество элементов. Повторите.");
+                    continue;
+                }
+                try {
+                    for (int j = 0; j < cols; j++) {
+                        int val = Integer.parseInt(parts[j]);
+                        if (val != 0 && val != 1) throw new NumberFormatException();
+                        mat[i][j] = (val == 1);
+                    }
+                    break;
+                } catch (NumberFormatException e) {
+                    System.out.println("Ошибка ввода. Допустимы только 0 и 1. Повторите строку.");
+                }
+            }
+        }
+
+        return mat;
+    }
+    
+    // Загрузка из файла
+    private int[][] loadIntMatrixFromFile() {
+        System.out.print("Имя файла: ");
+        String filename = scanner.nextLine().trim();
+        try {
+            int[][] mat = MatrixUtils.readIntMatrixFromFile(filename);
+            System.out.println("Матрица успешно загружена.");
+            return mat;
+        } catch (IOException e) {
+            System.out.println("Ошибка загрузки файла: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean[][] loadBoolMatrixFromFile() {
+        System.out.print("Имя файла: ");
+        String filename = scanner.nextLine().trim();
+        try {
+            boolean[][] mat = MatrixUtils.readBoolMatrixFromFile(filename);
+            System.out.println("Матрица успешно загружена.");
+            return mat;
+        } catch (IOException e) {
+            System.out.println("Ошибка загрузки файла: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    // Сохранение результатов
+    private void saveBooleanResultToFile(boolean result) {
+        System.out.print("Сохранить результат в файл? (y/n): ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+        if (answer.equals("y")) {
+            System.out.print("Имя файла: ");
+            String filename = scanner.nextLine().trim();
+            try {
+                MatrixUtils.writeBooleanResult(filename, result);
+                System.out.println("Результат успешно сохранён.");
+            } catch (IOException e) {
+                System.out.println("Ошибка при записи: " + e.getMessage());
+            }
+        }
+    }
+
+    private void saveRectangleResultToFile(int[] rect) {
+        System.out.print("Сохранить результат в файл? (y/n): ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+        if (answer.equals("y")) {
+            System.out.print("Имя файла: ");
+            String filename = scanner.nextLine().trim();
+            try {
+                MatrixUtils.writeRectangleResult(filename, rect);
+                System.out.println("Результат успешно сохранён.");
+            } catch (IOException e) {
+                System.out.println("Ошибка при записи: " + e.getMessage());
+            }
+        }
+    }
+
+    // Безопасный ввод числа
+    private int safeNextInt(Scanner sc) {
+        while (true) {
+            if (sc.hasNextInt()) {
+                int val = sc.nextInt();
+                sc.nextLine();
+                return val;
+            }
+            System.out.print("Введите корректное число: ");
+            sc.nextLine();
+        }
+    }
+}", src.utils.MatrixUtils.java:"package utils; 
+
+import java.io.*;
+import java.util.Scanner;
+
+public class MatrixUtils {
+    
+    // Чтение int матрицы (для задания 18)
+    public static int[][] readIntMatrixFromFile(String filename) throws IOException {
+        try (Scanner sc = new Scanner(new File(filename))) {
+
+            if (!sc.hasNextLine()) {
+                throw new IOException("Файл пустой");
+            }
+
+            String[] dim = sc.nextLine().trim().split("\\s+");
+            if (dim.length != 2) {
+                throw new IOException("Первая строка должна содержать rows cols");
+            }
+
+            int rows = Integer.parseInt(dim[0]);
+            int cols = Integer.parseInt(dim[1]);
+
+            if (rows <= 0 || cols <= 0) {
+                throw new IOException("Некорректные размеры матрицы");
+            }
+
+            int[][] mat = new int[rows][cols];
+
+            for (int i = 0; i < rows; i++) {
+                if (!sc.hasNextLine()) {
+                    throw new IOException("Недостаточно строк в файле");
+                }
+
+                String[] vals = sc.nextLine().trim().split("\\s+");
+                if (vals.length != cols) {
+                    throw new IOException("Строка " + (i + 1) + " содержит неверное количество элементов");
+                }
+
+                for (int j = 0; j < cols; j++) {
+                    mat[i][j] = Integer.parseInt(vals[j]);
+                }
+            }
+
+            return mat;
+        }
+    }
+
+    // Чтение boolean матрицы (для задания 19, формат 0/1)
+    public static boolean[][] readBoolMatrixFromFile(String filename) throws IOException {
+        try (Scanner sc = new Scanner(new File(filename))) {
+
+            if (!sc.hasNextLine()) {
+                throw new IOException("Файл пустой");
+            }
+
+            String[] dim = sc.nextLine().trim().split("\\s+");
+            if (dim.length != 2) {
+                throw new IOException("Первая строка должна содержать rows cols");
+            }
+
+            int rows = Integer.parseInt(dim[0]);
+            int cols = Integer.parseInt(dim[1]);
+
+            if (rows <= 0 || cols <= 0) {
+                throw new IOException("Некорректные размеры матрицы");
+            }
+
+            boolean[][] mat = new boolean[rows][cols];
+
+            for (int i = 0; i < rows; i++) {
+                if (!sc.hasNextLine()) {
+                    throw new IOException("Недостаточно строк в файле");
+                }
+
+                String[] vals = sc.nextLine().trim().split("\\s+");
+                if (vals.length != cols) {
+                    throw new IOException("Строка " + (i + 1) + " содержит неверное количество элементов");
+                }
+
+                for (int j = 0; j < cols; j++) {
+                    int val = Integer.parseInt(vals[j]);
+                    if (val != 0 && val != 1) {
+                        throw new IOException("Допустимы только значения 0 и 1");
+                    }
+                    mat[i][j] = (val == 1);
+                }
+            }
+
+            return mat;
+        }
+    }
+    
+    // Запись результатов - Yes/No для задания 18
+    public static void writeBooleanResult(String filename, boolean result) throws IOException {
+        try (PrintWriter pw = new PrintWriter(filename)) {
+            pw.println(result ? "Yes" : "No");
+        }
+    }
+
+    // Запись результатов - координаты прямоугольника (для задания 19)
+    public static void writeRectangleResult(String filename, int[] rect) throws IOException {
+        try (PrintWriter pw = new PrintWriter(filename)) {
+            pw.printf("%d %d %d %d%n", rect[0], rect[1], rect[2], rect[3]);
+        }
+    }
+    
+    // Проверка прямоугольности
+    public static boolean isRectangular(int[][] mat) {
+        if (mat == null || mat.length == 0) return true;
+        int cols = mat[0].length;
+        for (int[] row : mat) {
+            if (row == null || row.length != cols) return false;
+        }
+        return true;
+    }
+
+    // Задание 18 - спираль
+    public static boolean isSpiralOrdered(int[][] mat) {
+        if (mat == null || mat.length == 0 || mat[0].length == 0) {
+            return true;
+        }
+
+        int rows = mat.length;
+        int cols = mat[0].length;
+
+        int top = 0, bottom = rows - 1;
+        int left = 0, right = cols - 1;
+
+        Integer prev = null;
+
+        while (top <= bottom && left <= right) {
+
+            for (int j = left; j <= right; j++) {
+                int val = mat[top][j];
+                if (prev != null && val <= prev) return false;
+                prev = val;
+            }
+            top++;
+
+            for (int i = top; i <= bottom; i++) {
+                int val = mat[i][right];
+                if (prev != null && val <= prev) return false;
+                prev = val;
+            }
+            right--;
+
+            if (top <= bottom) {
+                for (int j = right; j >= left; j--) {
+                    int val = mat[bottom][j];
+                    if (prev != null && val <= prev) return false;
+                    prev = val;
+                }
+                bottom--;
+            }
+
+            if (left <= right) {
+                for (int i = bottom; i >= top; i--) {
+                    int val = mat[i][left];
+                    if (prev != null && val <= prev) return false;
+                    prev = val;
+                }
+                left++;
+            }
+        }
+
+        return true;
+    }
+
+
+    // Задание 19 - Максимальный прямоугольник true
+    public static int[] findMaxTrueRectangle(boolean[][] mat) {
+
+        if (mat == null || mat.length == 0 || mat[0].length == 0) {
+            return new int[]{-1, -1, -1, -1};
+        }
+
+        int rows = mat.length;
+        int cols = mat[0].length;
+
+        int bestArea = 0;
+        int bestR = -1, bestC = -1, bestH = -1, bestW = -1;
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+
+                if (!mat[r][c]) continue;
+
+                for (int h = 1; r + h <= rows; h++) {
+                    for (int w = 1; c + w <= cols; w++) {
+
+                        if (!isAllTrue(mat, r, c, h, w)) break;
+
+                        if (!isBorderFalse(mat, r, c, h, w)) continue;
+
+                        int area = h * w;
+
+                        if (area > bestArea ||
+                                (area == bestArea && (r < bestR || (r == bestR && c < bestC)))) {
+
+                            bestArea = area;
+                            bestR = r;
+                            bestC = c;
+                            bestH = h;
+                            bestW = w;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (bestArea == 0) {
+            return new int[]{-1, -1, -1, -1};
+        }
+
+        return new int[]{bestR, bestC, bestH, bestW};
+    }
+
+
+    // Вспомогательные для прямоугольника
+    private static boolean isAllTrue(boolean[][] mat, int r, int c, int h, int w) {
+        for (int i = r; i < r + h; i++) {
+            for (int j = c; j < c + w; j++) {
+                if (!mat[i][j]) return false;
+            }
+        }
+        return true;
+    }
+    
+    private static boolean isBorderFalse(boolean[][] mat, int r, int c, int h, int w) {
+        int rows = mat.length;
+        int cols = mat[0].length;
+
+        for (int i = r - 1; i <= r + h; i++) {
+            for (int j = c - 1; j <= c + w; j++) {
+
+                if (i >= r && i < r + h && j >= c && j < c + w) continue;
+
+                if (i >= 0 && i < rows && j >= 0 && j < cols) {
+                    if (mat[i][j]) return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean[][] readMatrix(Scanner sc, int rows, int cols) {
+        boolean[][] mat = new boolean[rows][cols];
+
+        System.out.println("Введите элементы матрицы (0 или 1):");
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+
+                while (!sc.hasNextInt()) {
+                    System.out.print("Введите 0 или 1: ");
+                    sc.next();
+                }
+
+                int val = sc.nextInt();
+                if (val != 0 && val != 1) {
+                    System.out.print("Только 0 или 1. Повторите: ");
+                    j--;
+                    continue;
+                }
+
+                mat[i][j] = (val == 1);
+            }
+        }
+
+        return mat;
+    }
+    
+    public static void printMatrix(boolean[][] mat) {
+        for (boolean[] row : mat) {
+            for (boolean val : row) {
+                System.out.print((val ? "1 " : "0 "));
+            }
+            System.out.println();
+        }
+    }
+    
+    public static boolean isSpiral(boolean[][] mat) {
+        int rows = mat.length;
+        int cols = mat[0].length;
+
+        int[][] converted = new int[rows][cols];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                converted[i][j] = mat[i][j] ? 1 : 0;
+            }
+        }
+
+        return isSpiralOrdered(converted);
+    }
+}", src.ru.vsu.cs.cource1.Task8.java:"package ru.vsu.cs.course1;
+
+import utils.MatrixUtils;
+
+import java.io.IOException;
+
+public class Task8 {
+
+    public static class InputArgs {
+        public String inputFile;
+        public String outputFile;
+        public int task; // 18 или 19
+
+        public InputArgs(String inputFile, String outputFile, int task) {
+            this.inputFile = inputFile;
+            this.outputFile = outputFile;
+            this.task = task;
+        }
+    }
+
+    public static void main(String[] args) {
+        InputArgs params = parseCmdArgs(args);
+
+        try {
+            if (params.task == 18) {
+                // Задание 18 — спираль
+                int[][] matrix = MatrixUtils.readIntMatrixFromFile(params.inputFile);
+                boolean result = MatrixUtils.isSpiralOrdered(matrix);
+                MatrixUtils.writeBooleanResult(params.outputFile, result);
+
+            } else if (params.task == 19) {
+                // Задание 19 — максимальный прямоугольник
+                boolean[][] matrix = MatrixUtils.readBoolMatrixFromFile(params.inputFile);
+                int[] rect = MatrixUtils.findMaxTrueRectangle(matrix);
+                MatrixUtils.writeRectangleResult(params.outputFile, rect);
+
+            } else {
+                System.err.println("Неверный номер задания: " + params.task);
+                System.exit(1);
+            }
+
+        } catch (IOException e) {
+            System.err.println("Ошибка работы с файлом: " + e.getMessage());
+            System.exit(2);
+        }
+    }
+
+    // Разбор аргументов командной строки
+    public static InputArgs parseCmdArgs(String[] args) {
+        String input = null;
+        String output = null;
+        Integer task = null;
+
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+
+            if (arg.equals("-i") && i + 1 < args.length) {
+                input = args[++i];
+            } else if (arg.equals("-o") && i + 1 < args.length) {
+                output = args[++i];
+            } else if (arg.equals("-t") && i + 1 < args.length) {
+                task = Integer.parseInt(args[++i]);
+            } else if (arg.startsWith("--input-file=")) {
+                input = arg.substring("--input-file=".length());
+            } else if (arg.startsWith("--output-file=")) {
+                output = arg.substring("--output-file=".length());
+            } else if (arg.startsWith("--task=")) {
+                task = Integer.parseInt(arg.substring("--task=".length()));
+            } else {
+                System.err.println("Неверный параметр: " + arg);
+                System.exit(1);
+            }
+        }
+
+        if (input == null || output == null || task == null) {
+            System.err.println("Не указаны все обязательные параметры.");
+            System.err.println("Использование: -i <input> -o <output> -t <18|19>");
+            System.exit(1);
+        }
+
+        return new InputArgs(input, output, task);
+    }
+}", src.Main.java:"import console.ConsoleApp;
+import window.WindowApp;
+
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+        new Main().run();
+    }
+
+    private void run() {
+        Scanner sc = new Scanner(System.in);
+
+        while (true) {
+            printMainMenu();
+            int choice = safeNextInt(sc);
+
+            switch (choice) {
+                case 1:
+                    runConsole(sc);
+                    break;
+
+                case 2:
+                    runWindow();
+                    break;
+
+                case 0:
+                    exitProgram();
+                    return;
+
+                default:
+                    System.out.println("Неверный выбор");
+            }
+        }
+    }
+    
+    // Вызорвы режимов
+    private void runConsole(Scanner sc) {
+        ConsoleApp consoleApp = new ConsoleApp();
+        consoleApp.runInteractiveMenu(sc);
+    }
+
+    private void runWindow() {
+        // пока просто заглушка, потом подключишь JavaFX
+        WindowApp.launchApp();
+    }
+
+    private void exitProgram() {
+        System.out.println("Выход из программы...");
+    }
+
+    // Меню
+    private void printMainMenu() {
+        System.out.println("\n=== ГЛАВНОЕ МЕНЮ ===");
+        System.out.println("1. Консоль");
+        System.out.println("2. Оконное приложение (JavaFX)");
+        System.out.println("0. Выход");
+        System.out.print("Ваш выбор: ");
+    }
+    
+    // Безопасный ввод числа
+    private int safeNextInt(Scanner sc) {
+        while (true) {
+            if (sc.hasNextInt()) {
+                int val = sc.nextInt();
+                sc.nextLine();
+                return val;
+            }
+            System.out.print("Введите число: ");
+            sc.nextLine();
+        }
+    }
+}"
