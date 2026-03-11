@@ -3,131 +3,131 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace tipisSKY
+namespace _3D_graphics_4lab
 {
-    public partial class tipis_WF : Form
-    {       
-        static Random rnd = new Random();
+    public partial class Form1 : Form
+    {
+        List<Point> glassPoints = new List<Point>()
+        {
+            new Point(161, 468),
+            new Point(299, 467),
+            new Point(460, 467),
+            new Point(490, 457),
+            new Point(504, 438),
+            new Point(479, 440),
+            new Point(456, 451),
+            new Point(490, 480),
+            new Point(524, 482),
+            new Point(565, 477),
+            new Point(582, 460),
+            new Point(576, 444),
+            new Point(549, 437),
+            new Point(536, 435),
+            new Point(531, 426),
+            new Point(530, 402),
+            new Point(525, 370),
+            new Point(526, 334),
+            new Point(535, 309),
+            new Point(569, 284),
+            new Point(557, 288),
+            new Point(540, 298),
+            new Point(529, 302),
+            new Point(515, 298),
+            new Point(500, 294),
+            new Point(492, 287),
+            new Point(518, 291),
+            new Point(550, 288),
+            new Point(580, 274),
+            new Point(595, 257),
+            new Point(602, 232),
+            new Point(605, 199),
+            new Point(598, 167),
+            new Point(588, 135),
+            new Point(546, 126),
+            new Point(510, 127),
+            new Point(469, 136),
+            new Point(456, 145),
+            new Point(479, 151),
+            new Point(518, 153),
+            new Point(556, 151),
+            new Point(580, 139),
+            new Point(562, 132),
+            new Point(502, 129),
+            new Point(449, 138),
+            new Point(435, 179),
+            new Point(433, 197),
+            new Point(471, 209),
+            new Point(510, 211),
+            new Point(546, 211),
+            new Point(580, 206),
+            new Point(596, 193),
+            new Point(566, 181),
+            new Point(529, 177),
+            new Point(494, 182),
+            new Point(455, 190),
+            new Point(431, 212),
+            new Point(439, 244),
+            new Point(459, 275),
+            new Point(482, 293),
+            new Point(507, 310),
+            new Point(516, 340),
+            new Point(517, 416),
+            new Point(504, 450),
+            new Point(522, 461),
+            new Point(550, 456),
+            new Point(550, 445),
+            new Point(566, 453),
+            new Point(667, 462),
+            new Point(730, 459),
+            new Point(787, 458),
+            new Point(851, 461)
+        };
 
-        public tipis_WF()
+        public Form1()
         {
             InitializeComponent();
+            this.Width = 900;
+            this.Height = 900;
+            this.Text = "Рисунок одной линией";
         }
 
-        private double mid()
+        protected override void OnPaint(PaintEventArgs e)
         {
-            return -2 + 9 * rnd.NextDouble();
-        }
+            base.OnPaint(e);
+            Graphics g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
 
-        private double[] generate(int n)
-        {
-            double[] data = new double[n];
-            for (int i = 0; i < n; i++)
-                data[i] = mid();
-            return data;
-        }
-
-        public void draw(double[] data, PictureBox pb)
-        {
-            int bins = 9;
-            int[] counts = new int[bins];
-
-            foreach (var x in data)
-            {
-                int index = (int)(x + 2);
-                if (index >= bins) index = bins - 1;
-                counts[index]++;
-            }
-
-            int maxCount = 0;
-            foreach (var c in counts)
-                if (c > maxCount) maxCount = c;
-
-            Bitmap bmp = new Bitmap(pb.Width, pb.Height);
-            Graphics g = Graphics.FromImage(bmp);
+            // Очищаем фон
             g.Clear(Color.White);
 
-            int barWidth = pb.Width / bins;
+            // Параметр упругости для сплайна
+            float elasticity = 0.5f;
 
-            for (int i = 0; i < bins; i++)
+            // Рисуем линию через все точки
+            if (glassPoints.Count > 1)
             {
-                int barHeight = (int)((counts[i] / (double)maxCount) * (pb.Height - 20));
-                g.FillRectangle(Brushes.Gray, i * barWidth, pb.Height - barHeight, barWidth - 2, barHeight);
-
-                g.DrawString(counts[i].ToString(), new Font("Times New Roman", 10), Brushes.Black,
-                    i * barWidth + 2, pb.Height - barHeight - 15);
-            }
-
-            pb.Image = bmp;
-        }
-
-        private void draw2(PictureBox pb)
-        {
-            int[] values = { 5, 7, 17, 19, 21, 25, 55 };
-            double[] probs = { 0.01, 0.05, 0.3, 0.3, 0.3, 0.02, 0.02 };
-            int bins = values.Length;
-            int[] counts = new int[bins];
-
-            Random rnd = new Random();
-            int n = 100000;
-
-            for (int i = 0; i < n; i++)
-            {
-                double r = rnd.NextDouble();
-                double sum = 0;
-                for (int j = 0; j < bins; j++)
+                // Рисуем основную линию
+                g.DrawCurve(new Pen(Color.DarkRed, 2), glassPoints.ToArray(), elasticity);
+                
+                // Для наглядности рисуем точки
+                SolidBrush brush = new SolidBrush(Color.Green);
+                foreach (Point pt in glassPoints)
                 {
-                    sum += probs[j];
-                    if (r <= sum)
-                    {
-                        counts[j]++;
-                        break;
-                    }
+                    g.FillEllipse(brush, pt.X - 2, pt.Y - 2, 4, 4);
                 }
+                
+                // Подписываем количество точек
+                Font font = new Font("Tahoma", 12);
+                g.DrawString($"Всего точек: {glassPoints.Count}", font, Brushes.Black, 10, 10);
             }
-
-            Bitmap bmp = new Bitmap(pb.Width, pb.Height);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.White);
-
-            int maxCount = 0;
-            foreach (var c in counts)
-                if (c > maxCount) maxCount = c;
-
-            int barWidth = pb.Width / bins;
-
-            for (int i = 0; i < bins; i++)
-            {
-                int barHeight = (int)((counts[i] / (double)maxCount) * (pb.Height - 50));
-
-                g.FillRectangle(Brushes.Green, i * barWidth, pb.Height - barHeight, barWidth - 5, barHeight);
-
-                g.DrawString(values[i].ToString(), new Font("Times New Roman", 10), Brushes.Black, i * barWidth + 5, pb.Height - 315);
-
-                g.DrawString(counts[i].ToString(), new Font("Times New Roman", 10), Brushes.Black, i * barWidth + 5, pb.Height - barHeight - 20);
-
-            }
-
-            pb.Image = bmp;
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            double[] smallSample = generate(1000);
-            draw(smallSample, pictureBox1);
-
-            double[] largeSample = generate(100000);
-            draw(largeSample, pictureBox2);
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            draw2(pictureBox3);
         }
     }
 }
