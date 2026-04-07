@@ -1,10 +1,49 @@
+Лабораторная работа 6
+«АНАЛИЗ V-КАНАЛЬНОЙ СМО С ЯВНЫМИ ПОТЕРЯМИ»
+
+1 Цель работы
+Исследовать 1-е распределение Эрланга и характеристики качества СМО с явными потерями.
+
+2	Задание на лабораторную работу:
+
+
+3 Ход работы:
+В ходе лабораторной работы была разработана программа на C# с использованием Windows Forms для анализа V-канальной системы массового обслуживания (СМО) с явными потерями. Программа вычисляет распределение вероятностей состояний системы Pi(Λ) для заданного числа каналов V и диапазона значений интенсивности входного потока Λ. Расчёт основан на первом распределении Эрланга:
+
+где Λ – интенсивность потока вызовов, рассчитанная по формуле из задания.
+Для каждого значения Λ\LambdaΛ программа строит вероятности всех состояний системы P0, P1, …, PV​, визуализируя их на графике с использованием элемента PictureBox. Добавлена разметка осей: по оси X откладывается Λ от 0 до 15, по оси Y – вероятность состояния от 0 до 1. На графике используется различное цветовое оформление кривых:
+	синяя кривая – P0(Λ);
+	зелёная кривая – P1(Λ);
+	красная кривая – P2(Λ);
+	фиолетовая кривая – P3(Λ);
+	оранжевая кривая – P4(Λ);
+	коричневая кривая – P5(Λ).
+Программа также рассчитывает характеристики качества обслуживания для конкретного значения интенсивности L= 10(N+1)/(N+4), включая:
+	вероятность потери вызова Pпот=EV(Λ);
+	потенциальную нагрузку A=Λ;
+	избыточную нагрузку R=Λ*Pпот;
+	обслуженную нагрузку Y=AR.
+Для наглядности результаты выводятся в текстовый элемент TextBox, включая значения вероятностей при Λ=0 и Λ–>∞, а также точки пересечения графиков Pi и Pi−1.
+ Используемые функции в программе:
+	Factorial() – вычисление факториала числа, необходимого для расчёта Pi(Λ); 
+	ErlangB() – расчёт вероятности потерь по первой формуле Эрланга;
+	DrawGraphPi() – построение графика вероятностей состояний системы с разметкой и легендой;
+	btnStart_Click() – основной обработчик, формирующий распределение Pi, рассчитывающий характеристики качества обслуживания и выводящий результаты в TextBox.
+Рисунок 1 – График распределений Pi(Λ)
+Вывод: в ходе лабораторной работы была реализована программа на C# с использованием Windows Forms для анализа V-канальной СМО с явными потерями. Программа позволила наглядно увидеть распределение вероятностей состояний системы при различных значениях интенсивности входного потока, подтвердить корректность расчёта вероятности потерь по первой формуле Эрланга, а также визуализировать основные показатели качества обслуживания: вероятность потерь, потенциальную, избыточную и обслуженную нагрузку. Полученные результаты соответствуют теоретическим данным методички, демонстрируя корректность построенной модели и правильность реализованных алгоритмов.
+
+
+Приложение А
+
+Листинг программного кода языка C#
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace CS_TIPIS_5
+namespace CS_TIPIS_6
 {
     public partial class Form1 : Form
     {
@@ -16,117 +55,180 @@ namespace CS_TIPIS_5
         private void btnStart_Click(object sender, EventArgs e)
         {
             int N = 18;
+            int V = 5;
 
-            double lambda1 = 10.0 * (N + 1) / (N + 4);
-            double lambda2 = 15.0 * (N + 1) / (N + 4);
+            int points = 120;
+            double lambdaMin = 0;
+            double lambdaMax = 15;
 
-            double T1 = N + 1;
-            double T2 = N + 4;
+            double[] lambdaArr = new double[points];
+            List<double[]> probs = new List<double[]>();
 
-            int intervals = 24;
-            double tau = (T2 - T1) / intervals;
+            for (int i = 0; i <= V; i++)
+                probs.Add(new double[points]);
 
-            Random rnd = new Random();
-
-            // Генерация потоков
-            var flow1 = GenerateFlow(lambda1, T1, T2, rnd);
-            var flow2 = GenerateFlow(lambda2, T1, T2, rnd);
-
-            int[] x1 = new int[intervals];
-            int[] x2 = new int[intervals];
-            int[] sum = new int[intervals];
-
-            double[] n = new double[intervals];
-
-            for (int i = 0; i < intervals; i++)
+            // Pi(λ)
+            for (int k = 0; k < points; k++)
             {
-                double start = T1 + i * tau;
-                double end = start + tau;
+                double lambda = lambdaMin + k * (lambdaMax - lambdaMin) / (points - 1);
+                lambdaArr[k] = lambda;
 
-                x1[i] = flow1.Count(t => t >= start && t < end);
-                x2[i] = flow2.Count(t => t >= start && t < end);
+                double denom = 0;
+                for (int j = 0; j <= V; j++)
+                    denom += Math.Pow(lambda, j) / Factorial(j);
 
-                sum[i] = x1[i] + x2[i];
-
-                n[i] = i + 1;
+                for (int i = 0; i <= V; i++)
+                {
+                    double pi = Math.Pow(lambda, i) / Factorial(i) / denom;
+                    probs[i][k] = pi;
+                }
             }
 
-            DrawGraph(pictureBox1, n, x1.Select(v => (double)v).ToArray(),x2.Select(v => (double)v).ToArray(),  sum.Select(v => (double)v).ToArray());
+            DrawGraphPi(pictureBox1, lambdaArr, probs);
+
+            // Характеристики
+            double lambda0 = 10.0 * (N + 1) / (N + 4);
+
+            double Pv = ErlangB(lambda0, V);
+
+            double A = lambda0;
+            double R = lambda0 * Pv;
+            double Y = A - R;
+
+            string resultText =
+                "Пункт 2.2:\r\n" +
+                $"P0(0) = 1, P_i(0) = 0 (i>0)\r\n" +
+                $"P_V(∞) = 1, остальные P_i(∞) = 0\r\n\r\n" +
+                "Точки пересечения P_i и P_{i-1}:\r\n" + string.Join("\r\n", Enumerable.Range(1, V).Select(i => $"P{i} = P{i - 1} при Λ = {i}")) +
+
+                "\r\n\r\nПункт 2.3:\r\n" +
+                $"λ = {lambda0:F2}\r\n" +
+                $"P потерь = {Pv:F4}\r\n" +
+                $"A (потенциальная) = {A:F2}\r\n" +
+                $"R (потери) = {R:F2}\r\n" +
+                $"Y (обслуженная) = {Y:F2}\r\n\r\n";
+
+            textBox1.Text = resultText;
         }
 
-        // Генерация простейшего потока
-        private List<double> GenerateFlow(double lambda, double T1, double T2, Random rnd)
+        // Факториал
+        private double Factorial(int n)
         {
-            List<double> events = new List<double>();
-
-            double t = T1;
-
-            while (true)
-            {
-                double r = rnd.NextDouble();
-                double z = -Math.Log(r) / lambda;
-
-                t += z;
-
-                if (t > T2)
-                    break;
-
-                events.Add(t);
-            }
-
-            return events;
+            double res = 1;
+            for (int i = 2; i <= n; i++)
+                res *= i;
+            return res;
         }
 
-        // Отрисовка графика
-        private void DrawGraph(PictureBox box, double[] n,double[] x1, double[] x2,double[] sum)
+        // Формула Эрланга
+        private double ErlangB(double lambda, int V)
+        {
+            double sum = 0;
+
+            for (int j = 0; j <= V; j++)
+                sum += Math.Pow(lambda, j) / Factorial(j);
+
+            return Math.Pow(lambda, V) / Factorial(V) / sum;
+        }
+
+        // График
+        private void DrawGraphPi(PictureBox box, double[] x, List<double[]> curves)
         {
             Bitmap bmp = new Bitmap(box.Width, box.Height);
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.White);
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 int margin = 60;
-                float zeroY = box.Height - margin;
 
+                double xMin = x.Min();
+                double xMax = x.Max();
                 double yMin = 0;
+                double yMax = 1;
 
-                double yMax = Math.Ceiling(sum.Max()) + 1;
+                // Сетка
+                using (Pen gridPen = new Pen(Color.LightGray))
+                {
+                    for (int i = 0; i <= 15; i++)
+                    {
+                        float px = margin + (float)((double)i / 15 * (box.Width - 2 * margin));
+                        g.DrawLine(gridPen, px, margin, px, box.Height - margin);
+                    }
 
-                double yScale = (box.Height - 2 * margin) / (yMax - yMin);
+                    for (int i = 0; i <= 10; i++)
+                    {
+                        float py = box.Height - margin - (float)((double)i / 10 * (box.Height - 2 * margin));
+                        g.DrawLine(gridPen, margin, py, box.Width - margin, py);
+                    }
+                }
 
-                DrawCurve(g, box, n, x1, Color.Blue, yScale, zeroY, margin, yMin);
-                DrawCurve(g, box, n, x2, Color.Green, yScale, zeroY, margin, yMin);
-                DrawCurve(g, box, n, sum, Color.Red, yScale, zeroY, margin, yMin);
+                // Оси
+                using (Pen axisPen = new Pen(Color.Black, 2))
+                {
+                    g.DrawLine(axisPen, margin, margin, margin, box.Height - margin);
+                    g.DrawLine(axisPen, margin, box.Height - margin, box.Width - margin, box.Height - margin);
+                }
 
                 using (Font font = new Font("Tahoma", 9))
-                using (Font fontBold = new Font("Tahoma", 10, FontStyle.Bold))
                 {
-                    g.DrawString("Количество вызовов", fontBold, Brushes.Black, 5, 5);
-                    g.DrawString("Интервалы", fontBold, Brushes.Black, box.Width / 2 - 40, box.Height - 25);
-
-                    // Сетка X
-                    for (int i = 1; i <= 24; i++)
+                    // X (λ)
+                    for (int i = 0; i <= 15; i++)
                     {
-                        float xPos = margin + (float)((double)i / 24 * (box.Width - 2 * margin));
+                        float px = margin + (float)((double)i / 15 * (box.Width - 2 * margin));
 
-                        g.DrawLine(Pens.LightGray, xPos, margin, xPos, box.Height - margin);
-                        g.DrawString(i.ToString(), font, Brushes.Black, xPos - 8, box.Height - margin + 5);
+                        g.DrawLine(Pens.Black, px, box.Height - margin, px, box.Height - margin + 5);
+                        g.DrawString(i.ToString(), font, Brushes.Black, px - 10, box.Height - margin + 8);
                     }
 
-                    // Сетка Y
-                    for (int i = 0; i <= yMax; i++)
+                    // Y (Pi)
+                    for (int i = 0; i <= 10; i++)
                     {
-                        float yPos = zeroY - (float)((i - yMin) * yScale);
+                        double val = i * 0.1;
 
-                        g.DrawLine(Pens.LightGray, margin, yPos, box.Width - margin, yPos);
-                        g.DrawString(i.ToString(), font, Brushes.Black, margin - 30, yPos - 7);
+                        float py = box.Height - margin - (float)((double)i / 10 * (box.Height - 2 * margin));
+
+                        g.DrawLine(Pens.Black, margin - 5, py, margin, py);
+                        g.DrawString(val.ToString("0.0"), font, Brushes.Black, margin - 45, py - 7);
                     }
+                }
 
-                    g.DrawString("x1(τ)", font, Brushes.Blue, margin + 100, 5);
-                    g.DrawString("x2(τ)", font, Brushes.Green, margin + 100, 25);
-                    g.DrawString("x1 + x2", font, Brushes.Red, margin + 100, 45);
+                // Графики
+                for (int i = 0; i < curves.Count; i++)
+                {
+                    Color color = ColorFromIndex(i);
+
+                    using (Pen pen = new Pen(color, 2))
+                    {
+                        List<PointF> pts = new List<PointF>();
+
+                        for (int k = 0; k < x.Length; k++)
+                        {
+                            float px = margin + (float)((x[k] - xMin) / (xMax - xMin) * (box.Width - 2 * margin));
+                            float py = box.Height - margin - (float)((curves[i][k] - yMin) / (yMax - yMin) * (box.Height - 2 * margin));
+
+                            pts.Add(new PointF(px, py));
+                        }
+
+                        if (pts.Count > 1)
+                            g.DrawLines(pen, pts.ToArray());
+                    }
+                }
+
+                // Подписи
+                using (Font fontBold = new Font("Tahoma", 12, FontStyle.Bold))
+                {
+                    g.DrawString("Pi(λ)", fontBold, Brushes.Black, 5, 5);
+                    g.DrawString("λ", fontBold, Brushes.Black, box.Width / 2, box.Height - 30);
+                }
+
+                // Легенда
+                using (Font font = new Font("Tahoma", 12))
+                {
+                    for (int i = 0; i < curves.Count; i++)
+                    {
+                        g.DrawString($"P{i}", font, new SolidBrush(ColorFromIndex(i)), margin + i * 30, 25);
+                    }
                 }
             }
 
@@ -136,24 +238,19 @@ namespace CS_TIPIS_5
             box.Image = bmp;
         }
 
-        // Рисование линии
-        private void DrawCurve(Graphics g, PictureBox box, double[] t, double[] values, Color color, double yScale, float zeroY, int margin,double yMin)
+        // Цвета 
+        private Color ColorFromIndex(int i)
         {
-            using (Pen pen = new Pen(color, 2f))
-            {
-                List<PointF> points = new List<PointF>();
+            Color[] colors = {
+                Color.Blue,
+                Color.Green,
+                Color.Red,
+                Color.Purple,
+                Color.Orange,
+                Color.Brown
+            };
 
-                for (int i = 0; i < t.Length; i++)
-                {
-                    float px = margin + (float)(t[i] / t[t.Length - 1] * (box.Width - 2 * margin));
-                    float py = zeroY - (float)((values[i] - yMin) * yScale);
-
-                    points.Add(new PointF(px, py));
-                }
-
-                if (points.Count > 1)
-                    g.DrawLines(pen, points.ToArray());
-            }
+            return colors[i % colors.Length];
         }
     }
 }
