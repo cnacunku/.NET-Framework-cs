@@ -1,233 +1,73 @@
-using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Windows.Forms;
-using Tao.FreeGlut;
-using Tao.OpenGl;
-using Tao.Platform.Windows;
-
-namespace LAB6_3D
-{
-    public partial class Form1 : Form
-    {
-        private float rotX = 20;
-        private float rotY = 30;
-        private bool isDragging = false;
-        private int lastMouseX, lastMouseY;
-        private float zoom = 1.0f;
-        private uint textureID;
-
-        public Form1()
-        {
-            InitializeComponent();
-            AnT.InitializeContexts();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            Glut.glutInit();
-            Glut.glutInitDisplayMode(Glut.GLUT_RGB | Glut.GLUT_DOUBLE | Glut.GLUT_DEPTH);
-
-            Gl.glClearColor(0.9f, 0.9f, 0.9f, 1f);
-            Gl.glViewport(0, 0, AnT.Width, AnT.Height);
-
-            Gl.glMatrixMode(Gl.GL_PROJECTION);
-            Gl.glLoadIdentity();
-            Glu.gluPerspective(45, (float)AnT.Width / AnT.Height, 0.1, 200);
-
-            Gl.glMatrixMode(Gl.GL_MODELVIEW);
-            Gl.glLoadIdentity();
-
-            Gl.glEnable(Gl.GL_DEPTH_TEST);
-
-            // Освещение
-            Gl.glEnable(Gl.GL_LIGHTING);
-            Gl.glEnable(Gl.GL_LIGHT0);
-            float[] lightPos = { 5f, 5f, 5f, 1f };
-            float[] lightColor = { 1f, 1f, 1f, 1f };
-            Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_POSITION, lightPos);
-            Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_DIFFUSE, lightColor);
-            Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, lightColor);
-
-            Gl.glEnable(Gl.GL_COLOR_MATERIAL);
-            Gl.glColorMaterial(Gl.GL_FRONT, Gl.GL_AMBIENT_AND_DIFFUSE);
-
-            // Текстуры
-            Gl.glEnable(Gl.GL_TEXTURE_2D);
-            LoadTexture();
-
-            // События мыши
-            AnT.MouseDown += AnT_MouseDown;
-            AnT.MouseUp += AnT_MouseUp;
-            AnT.MouseMove += AnT_MouseMove;
-            AnT.MouseWheel += AnT_MouseWheel;
-        }
-
-        private void LoadTexture()
-        {
-            Bitmap image = new Bitmap(@"C:\Users\admin\Desktop\текстура.jpg");
-            image.RotateFlip(RotateFlipType.RotateNoneFlipY);
-
-            BitmapData data = image.LockBits(
-                new Rectangle(0, 0, image.Width, image.Height),
-                ImageLockMode.ReadOnly,
-                PixelFormat.Format24bppRgb
-            );
-
-            Gl.glGenTextures(1, out textureID);
-            Gl.glBindTexture(Gl.GL_TEXTURE_2D, textureID);
-
-            Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MIN_FILTER, Gl.GL_LINEAR);
-            Gl.glTexParameteri(Gl.GL_TEXTURE_2D, Gl.GL_TEXTURE_MAG_FILTER, Gl.GL_LINEAR);
-
-            Gl.glTexImage2D(
-                Gl.GL_TEXTURE_2D, 0, Gl.GL_RGB,
-                data.Width, data.Height, 0,
-                Gl.GL_BGR, Gl.GL_UNSIGNED_BYTE, data.Scan0
-            );
-
-            image.UnlockBits(data);
-        }
-
-        private void buttonExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
-        private void buttonRender_Click(object sender, EventArgs e)
-        {
-            DrawScene();
-        }
-
-        private void DrawScene()
-        {
-            Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
-            Gl.glLoadIdentity();
-
-            Gl.glTranslatef(0, 0, -6);
-            Gl.glScalef(zoom, zoom, zoom);
-            Gl.glRotatef(rotX, 1, 0, 0);
-            Gl.glRotatef(rotY, 0, 1, 0);
-
-            // 1. Цилиндр
-            Gl.glPushMatrix();
-            Gl.glColor3f(1.0f, 1.0f, 1.0f);
-            Gl.glTranslatef(0, -1.7f, 0);
-            DrawClosedCylinder();
-            Gl.glPopMatrix();
-
-            // 2. Чайник
-            Gl.glDisable(Gl.GL_TEXTURE_2D);
-            Gl.glColor3f(1.0f, 0.4f, 0.7f);
-            Glut.glutSolidTeapot(1.5);
-            Gl.glEnable(Gl.GL_TEXTURE_2D);
-
-            // 3. Тор
-            Gl.glPushMatrix();
-            Gl.glTranslatef(0, 2.6f, 0);
-
-            Gl.glRotatef(180, 0, 1, 0);
-
-            Gl.glColor3f(0.2f, 0.6f, 1.0f);
-            Glut.glutWireTorus(0.35, 1, 25, 35);
-            Gl.glPopMatrix();
-            
-
-            AnT.Invalidate();
-        }
-
-        private void AnT_MouseWheel(object sender, MouseEventArgs e)
-        {
-            if (e.Delta > 0)
-                zoom += 0.1f;
-            else
-                zoom -= 0.1f;
-
-            if (zoom < 0.1f) zoom = 0.1f;
-            if (zoom > 5f) zoom = 5f;
-
-            DrawScene();
-        }
-
-        private void DrawClosedCylinder()
-        {
-            Gl.glBindTexture(Gl.GL_TEXTURE_2D, textureID);
-
-            int slices = 40;
-            float radius = 1.2f;
-            float height = 0.5f;
-
-            Gl.glBegin(Gl.GL_QUAD_STRIP);
-            for (int i = 0; i <= slices; i++)
-            {
-                double angle = 2.0 * Math.PI * i / slices;
-                float x = (float)Math.Cos(angle);
-                float z = (float)Math.Sin(angle);
-
-                Gl.glTexCoord2f((float)i / slices, 0);
-                Gl.glVertex3f(radius * x, -height, radius * z);
-
-                Gl.glTexCoord2f((float)i / slices, 1);
-                Gl.glVertex3f(radius * x, height, radius * z);
-            }
-            Gl.glEnd();
-
-            Gl.glBegin(Gl.GL_TRIANGLE_FAN);
-            Gl.glTexCoord2f(0.5f, 0.5f);
-            Gl.glVertex3f(0, -height, 0);
-            for (int i = 0; i <= slices; i++)
-            {
-                double angle = 2.0 * Math.PI * i / slices;
-                float x = (float)Math.Cos(angle);
-                float z = (float)Math.Sin(angle);
-                Gl.glTexCoord2f(0.5f + 0.5f * x, 0.5f + 0.5f * z);
-                Gl.glVertex3f(radius * x, -height, radius * z);
-            }
-            Gl.glEnd();
-
-            // Верхняя крышка
-            Gl.glBegin(Gl.GL_TRIANGLE_FAN);
-            Gl.glTexCoord2f(0.5f, 0.5f);
-            Gl.glVertex3f(0, height, 0);
-            for (int i = 0; i <= slices; i++)
-            {
-                double angle = 2.0 * Math.PI * i / slices;
-                float x = (float)Math.Cos(angle);
-                float z = (float)Math.Sin(angle);
-                Gl.glTexCoord2f(0.5f + 0.5f * x, 0.5f + 0.5f * z);
-                Gl.glVertex3f(radius * x, height, radius * z);
-            }
-            Gl.glEnd();
-        }
-
-        private void AnT_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                isDragging = true;
-                lastMouseX = e.X;
-                lastMouseY = e.Y;
-            }
-        }
-
-        private void AnT_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-                isDragging = false;
-        }
-
-        private void AnT_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (isDragging)
-            {
-                int dx = e.X - lastMouseX;
-                int dy = e.Y - lastMouseY;
-                rotY += dx;
-                rotX += dy;
-                lastMouseX = e.X;
-                lastMouseY = e.Y;
-                DrawScene();
-            }
-        }
-    }
-}
+Лабораторная работа № 7
+ПОСТРОЕНИЕ UML-МОДЕЛИ СИСТЕМЫ.
+ДИАГРАММА ПОСЛЕДОВАТЕЛЬНОСТИ
+Цель работы
+Научиться на практике построению диаграмм последовательности.
+Постановка задачи
+Для заданной предметной области «Туристическое агентство» (описание см. в лаб. работе № 5) построить диаграмму последовательности.
+Указания
+Диаграмма последовательности наглядно отображает временной аспект
+взаимодействия. Она имеет два измерения. Одно измерение (слева направо)
+указывает на порядок вовлечения экземпляров сущностей во взаимодействие. Крайним слева на диаграмме отображается экземпляр действующего
+лица или объект, который является инициатором взаимодействия. Правее
+отображается другой экземпляр сущности, который непосредственно взаимодействует с первым, и т. д. Второе измерение (сверху вниз) указывает на
+порядок обмена сообщениями.
+Основные элементы диаграммы последовательности представлены
+в табл. 7.1.
+Таблица 7.1
+Назначение графических символов,
+используемых в диаграмме последовательности
+Номер
+п/п
+Название
+элемента
+Графическое
+обозначение
+Описание
+элемента
+1 Линия жизни «Линия жизни» служит для
+обозначения периода времени,
+в течение которого экземпляр
+может потенциально участвовать во взаимодействии
+2 Синхронное
+сообщение
+Тип сообщения, при котором
+клиент посылает сообщение
+серверу и ждет, пока тот примет и обработает сообщение
+27
+Окончание табл. 7.1
+Номер
+п/п
+Название
+элемента
+Графическое
+обозначение
+Описание
+элемента
+3 Асинхронное
+сообщение
+Тип сообщения, при котором
+клиент посылает сообщение
+серверу и, не дожидаясь ответа, продолжает выполнять следующие операции.
+4 Возвращающее
+сообщение
+Тип сообщения, который подразумевает возврат значения
+или управления от сервера обратно клиенту
+5 Фрагмент Фрагмент используется для моделирования особенностей взаимодействия (условных операторов, циклов)
+Диаграмма последовательности для туристического агентства представлена на рис. 7.1.
+Рис. 7.1. Диаграмма последовательности для предметной области
+«Туристическое агентство»
+На диаграмме последовательности для некоторого набора объектов на
+единой временной оси показан жизненный цикл (создание – деятельность –
+уничтожение) и взаимодействие (отправка запросов и получение ответов).
+28
+После изучения диаграммы вариантов использования (см. табл. 5.1)
+необходимо проанализировать ее составные части. Наиболее важными из
+них являются варианты использования, осуществляемые клиентом.
+Описание сценария данных действий включает следующие действия:
+1) клиент просматривает существующие туры на сайте;
+2) клиент изучает подробную информацию о туре;
+3) клиент использует поиск в каталоге по ключевым словам;
+4) если желаемый тур отсутствует, клиент оставляет пожелания на сайте;
+5) туроператор просматривает пожелания клиентов на сайте и добавляет тур;
+6) турагент продает сформированный туроператором турпродукт клиенту.
